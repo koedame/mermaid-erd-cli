@@ -15,8 +15,9 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Output formats: self-contained HTML viewer, raw Mermaid text, and JSON.
 - Stream Mermaid/JSON to stdout (`--format mermaid|json`, or `--out -`) for
   piping into other tools.
-- `--serve` to view the HTML over HTTP; `--ignore-tables` and `mermaid-erd.yml`
-  config for excluding tables.
+- `--serve` to view the HTML over HTTP, with `--port` and `--host` to choose the
+  listen address (defaults: random port, loopback); `--ignore-tables` and
+  `mermaid-erd.yml` config for excluding tables.
 - `--pg-schema <name>` to introspect a non-`public` PostgreSQL schema.
 - HTML viewer UI translated into 9 languages (English, Japanese, Chinese,
   Korean, Spanish, French, German, Portuguese, Russian), auto-detected from the

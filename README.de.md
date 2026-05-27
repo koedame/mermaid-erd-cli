@@ -25,7 +25,8 @@ Beziehungen werden aus Fremdschlüsseln abgeleitet: Die referenzierte Tabelle is
 # Interaktiver HTML-Viewer (Standard → erd/index.html)
 npx mermaid-erd-cli --db "postgres://user:pass@localhost:5432/mydb"
 npx mermaid-erd-cli --db ./dev.sqlite3
-npx mermaid-erd-cli --db ./dev.sqlite3 --serve        # über HTTP bereitstellen
+npx mermaid-erd-cli --db ./dev.sqlite3 --serve        # über HTTP bereitstellen (zufälliger Port)
+npx mermaid-erd-cli --db ./dev.sqlite3 --serve --port 5173   # auf einem festen Port bereitstellen
 
 # Schema-Dumps – keine Datenbankverbindung nötig
 npx mermaid-erd-cli --schema ./db/schema.rb           # Rails schema.rb
@@ -62,6 +63,8 @@ Das Parsen von Schema-Dumps (`--schema`) benötigt gar keinen Treiber.
 | `--format <html\|mermaid\|json>` | Ausgabeformat (`mmd` ist ein Alias für `mermaid`) | `html` |
 | `--out <path>` | Ausgabepfad; `-` bedeutet Standardausgabe | `erd/index.html` (html); Standardausgabe (mermaid/json) |
 | `--serve` | HTML rendern und über HTTP bereitstellen | aus |
+| `--port <number>` | Port, auf dem `--serve` lauscht | zufällig |
+| `--host <address>` | Adresse, an die `--serve` bindet. `0.0.0.0` macht das vollständige Schema auf allen Netzwerkschnittstellen zugänglich — nur in vertrauenswürdigen Netzwerken verwenden | `127.0.0.1` |
 | `--ignore-tables <patterns>` | Komma-getrennte Regex-Muster zum Ausschließen | `^schema_migrations$,^ar_internal_metadata$` |
 | `--config <path>` | Pfad zur Konfigurationsdatei | `mermaid-erd.yml` |
 | `--title <name>` | Im HTML-Viewer angezeigter Titel | `Database` |

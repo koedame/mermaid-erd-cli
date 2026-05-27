@@ -25,7 +25,8 @@
 # 交互式 HTML 查看器(默认 → erd/index.html)
 npx mermaid-erd-cli --db "postgres://user:pass@localhost:5432/mydb"
 npx mermaid-erd-cli --db ./dev.sqlite3
-npx mermaid-erd-cli --db ./dev.sqlite3 --serve        # 通过 HTTP 提供
+npx mermaid-erd-cli --db ./dev.sqlite3 --serve        # 通过 HTTP 提供（随机端口）
+npx mermaid-erd-cli --db ./dev.sqlite3 --serve --port 5173   # 使用固定端口提供
 
 # 模式转储——无需数据库连接
 npx mermaid-erd-cli --schema ./db/schema.rb           # Rails schema.rb
@@ -62,6 +63,8 @@ npx mermaid-erd-cli --db ./dev.sqlite3 --format json | jq '.Models[].TableName'
 | `--format <html\|mermaid\|json>` | 输出格式(`mmd` 是 `mermaid` 的别名) | `html` |
 | `--out <path>` | 输出路径;`-` 表示标准输出 | `erd/index.html`(html);标准输出(mermaid/json) |
 | `--serve` | 渲染 HTML 并通过 HTTP 提供 | 关闭 |
+| `--port <number>` | `--serve` 监听的端口 | 随机 |
+| `--host <address>` | `--serve` 绑定的地址。`0.0.0.0` 会将完整架构暴露在所有网络接口上——仅在可信网络中使用 | `127.0.0.1` |
 | `--ignore-tables <patterns>` | 要排除的表的正则表达式(逗号分隔) | `^schema_migrations$,^ar_internal_metadata$` |
 | `--config <path>` | 配置文件路径 | `mermaid-erd.yml` |
 | `--title <name>` | HTML 查看器中显示的标题 | `Database` |

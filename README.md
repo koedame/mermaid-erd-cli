@@ -30,7 +30,8 @@ renders as a mandatory relation (`||--o{`); a nullable one renders as optional
 # Interactive HTML viewer (default → erd/index.html)
 npx mermaid-erd-cli --db "postgres://user:pass@localhost:5432/mydb"
 npx mermaid-erd-cli --db ./dev.sqlite3
-npx mermaid-erd-cli --db ./dev.sqlite3 --serve        # serve over HTTP
+npx mermaid-erd-cli --db ./dev.sqlite3 --serve        # serve over HTTP (random port)
+npx mermaid-erd-cli --db ./dev.sqlite3 --serve --port 5173   # serve on a fixed port
 
 # Schema dumps — no database connection needed
 npx mermaid-erd-cli --schema ./db/schema.rb           # Rails schema.rb
@@ -67,6 +68,8 @@ Schema-dump parsing (`--schema`) needs no driver at all.
 | `--format <html\|mermaid\|json>` | Output format (`mmd` is an alias for `mermaid`) | `html` |
 | `--out <path>` | Output path; `-` means stdout | `erd/index.html` (html); stdout (mermaid/json) |
 | `--serve` | Render HTML and serve it over HTTP | off |
+| `--port <number>` | Port to listen on with `--serve` | random |
+| `--host <address>` | Address to bind with `--serve`. `0.0.0.0` exposes your full schema on every network interface — use only on trusted networks | `127.0.0.1` |
 | `--ignore-tables <patterns>` | Comma-separated regex patterns to exclude | `^schema_migrations$,^ar_internal_metadata$` |
 | `--config <path>` | Config file path | `mermaid-erd.yml` |
 | `--title <name>` | Title shown in the HTML viewer | `Database` |
