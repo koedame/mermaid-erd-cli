@@ -43,4 +43,10 @@ describe("localized READMEs", () => {
       expect(text, f).toContain("# mermaid-erd-cli");
     }
   });
+
+  it("links the GitHub Pages live demo from every README", () => {
+    for (const f of files) {
+      expect(read(f), f).toContain("https://koedame.github.io/mermaid-erd-cli/");
+    }
+  });
 });

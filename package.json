@@ -17,6 +17,7 @@
     "build": "tsc",
     "test": "vitest run",
     "e2e": "node --import tsx scripts/e2e.ts",
+    "demo": "node dist/cli.js --schema docs/demo.sql --out docs/index.html --title \"mermaid-erd-cli — live demo\"",
     "lint": "biome check src test scripts",
     "format": "biome check --write src test scripts",
     "prepack": "npm run build"
