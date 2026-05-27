@@ -48,3 +48,14 @@ bash scripts/verify-db.sh
 
 Open PRs against `main`. CI runs the build, tests, and the e2e check across
 Node 20/22.
+
+## Releasing
+
+Releases are published manually from a maintainer's machine; there is no CI
+publish step.
+
+1. Bump `version` in `package.json` and add a matching `CHANGELOG.md` entry;
+   commit and push to `main`.
+2. From a clean checkout of that commit, run `npm publish --access public`. The
+   `prepack` script builds `dist/` before the tarball is assembled.
+3. Tag the released commit: `git tag vX.Y.Z && git push origin vX.Y.Z`.
