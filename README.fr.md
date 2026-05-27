@@ -53,6 +53,63 @@ Le pilote de votre base n’est chargé qu’en cas de besoin ; installez donc u
 
 L’analyse des exports de schéma (`--schema`) ne nécessite aucun pilote.
 
+## Docker
+
+Des images préconstruites sont publiées à chaque version sur GitHub Container
+Registry et Docker Hub. L’environnement d’exécution est une image distroless
+minimale qui embarque les trois pilotes de base de données, si bien que
+l’introspection en direct fonctionne sans rien installer d’autre.
+
+```bash
+docker pull ghcr.io/koedame/mermaid-erd-cli   # ou : docker pull koedame/mermaid-erd-cli
+```
+
+Le conteneur travaille dans `/work` ; montez-y le répertoire que vous voulez
+lire et écrire. Les exemples utilisent l’image GHCR — remplacez
+`ghcr.io/koedame/mermaid-erd-cli` par `koedame/mermaid-erd-cli` pour Docker Hub.
+
+```bash
+# Export de schéma dans le répertoire courant -> erd/index.html à côté
+docker run --rm -u "$(id -u):$(id -g)" -v "$PWD:/work" \
+  ghcr.io/koedame/mermaid-erd-cli --schema schema.rb
+
+# Mermaid / JSON vers la sortie standard
+docker run --rm -v "$PWD:/work" ghcr.io/koedame/mermaid-erd-cli --schema dump.sql --format mermaid
+
+# Fichier SQLite en direct
+docker run --rm -v "$PWD:/work" ghcr.io/koedame/mermaid-erd-cli --db /work/dev.sqlite3 --format mermaid
+```
+
+L’image s’exécute en tant qu’utilisateur non-root ; ajoutez donc
+`-u "$(id -u):$(id -g)"` lorsqu’elle écrit dans un répertoire hôte qui vous
+appartient (comme dans le premier exemple) ; les commandes qui n’écrivent que
+sur la sortie standard n’en ont pas besoin.
+
+Pour atteindre une base de données qui tourne sur l’hôte, rappelez-vous que
+`localhost` dans le conteneur désigne le conteneur lui-même. Utilisez
+`host.docker.internal` (Docker Desktop) ou `--network host` (Linux) :
+
+```bash
+docker run --rm --network host ghcr.io/koedame/mermaid-erd-cli \
+  --db "postgres://user:pass@localhost:5432/mydb" --format mermaid
+```
+
+Pour servir la visionneuse, liez-vous à `0.0.0.0` dans le conteneur et publiez
+le port : elle ne reste accessible que via le port que vous publiez.
+
+```bash
+docker run --rm -p 8080:8080 -v "$PWD:/work" ghcr.io/koedame/mermaid-erd-cli \
+  --db /work/dev.sqlite3 --serve --host 0.0.0.0 --port 8080
+# puis ouvrez http://localhost:8080
+```
+
+Pour construire l’image vous-même plutôt que de la télécharger :
+
+```bash
+docker build -t mermaid-erd-cli .
+docker run --rm -v "$PWD:/work" mermaid-erd-cli --schema schema.rb
+```
+
 ## Options
 
 | Option | Description | Par défaut |

@@ -53,6 +53,63 @@ npx mermaid-erd-cli --db ./dev.sqlite3 --format json | jq '.Models[].TableName'
 
 スキーマダンプ解析（`--schema`）はドライバ不要です。
 
+## Docker
+
+ビルド済みイメージは各リリースごとに GitHub Container Registry と
+Docker Hub に公開されています。ランタイムは最小限の distroless イメージで、
+3 つのデータベースドライバがすべて同梱されているため、ライブ introspection も
+追加インストールなしで動作します。
+
+```bash
+docker pull ghcr.io/koedame/mermaid-erd-cli   # または: docker pull koedame/mermaid-erd-cli
+```
+
+コンテナの作業ディレクトリは `/work` です。読み書きしたいディレクトリをここに
+マウントしてください。以下の例では GHCR イメージを使用しています。Docker Hub を
+使う場合は `ghcr.io/koedame/mermaid-erd-cli` を `koedame/mermaid-erd-cli` に
+置き換えてください。
+
+```bash
+# カレントディレクトリのスキーマダンプ -> 同じ場所に erd/index.html
+docker run --rm -u "$(id -u):$(id -g)" -v "$PWD:/work" \
+  ghcr.io/koedame/mermaid-erd-cli --schema schema.rb
+
+# Mermaid / JSON を標準出力へ
+docker run --rm -v "$PWD:/work" ghcr.io/koedame/mermaid-erd-cli --schema dump.sql --format mermaid
+
+# ライブの SQLite ファイル
+docker run --rm -v "$PWD:/work" ghcr.io/koedame/mermaid-erd-cli --db /work/dev.sqlite3 --format mermaid
+```
+
+イメージは非 root ユーザーで実行されます。ホストディレクトリに書き込む場合は
+（最初の例のように）`-u "$(id -u):$(id -g)"` を追加してください。標準出力のみの
+コマンドには不要です。
+
+ホスト上で動いているデータベースに接続するときは、コンテナ内の `localhost` が
+コンテナ自身を指す点に注意してください。`host.docker.internal`（Docker Desktop）
+または `--network host`（Linux）を使います。
+
+```bash
+docker run --rm --network host ghcr.io/koedame/mermaid-erd-cli \
+  --db "postgres://user:pass@localhost:5432/mydb" --format mermaid
+```
+
+ビューアを配信するときは、コンテナ内で `0.0.0.0` にバインドしてポートを公開します。
+公開したポート経由でのみアクセスできます。
+
+```bash
+docker run --rm -p 8080:8080 -v "$PWD:/work" ghcr.io/koedame/mermaid-erd-cli \
+  --db /work/dev.sqlite3 --serve --host 0.0.0.0 --port 8080
+# その後 http://localhost:8080 を開く
+```
+
+イメージを pull せず自分でビルドする場合:
+
+```bash
+docker build -t mermaid-erd-cli .
+docker run --rm -v "$PWD:/work" mermaid-erd-cli --schema schema.rb
+```
+
 ## オプション
 
 | オプション | 説明 | 既定 |

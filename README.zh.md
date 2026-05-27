@@ -53,6 +53,59 @@ npx mermaid-erd-cli --db ./dev.sqlite3 --format json | jq '.Models[].TableName'
 
 模式转储解析(`--schema`)完全不需要任何驱动。
 
+## Docker
+
+每次发布时，预构建镜像都会同步发布到 GitHub Container Registry 和
+Docker Hub。运行时使用最小化的 distroless 镜像，内置全部三种数据库驱动，
+因此实时自省(introspection)无需额外安装任何东西即可使用。
+
+```bash
+docker pull ghcr.io/koedame/mermaid-erd-cli   # 或: docker pull koedame/mermaid-erd-cli
+```
+
+容器的工作目录是 `/work`；把你需要读写的目录挂载到这里。以下示例使用 GHCR 镜像——
+如需使用 Docker Hub，请将 `ghcr.io/koedame/mermaid-erd-cli` 替换为
+`koedame/mermaid-erd-cli`。
+
+```bash
+# 当前目录中的模式转储 -> 在同一位置生成 erd/index.html
+docker run --rm -u "$(id -u):$(id -g)" -v "$PWD:/work" \
+  ghcr.io/koedame/mermaid-erd-cli --schema schema.rb
+
+# 将 Mermaid / JSON 输出到标准输出
+docker run --rm -v "$PWD:/work" ghcr.io/koedame/mermaid-erd-cli --schema dump.sql --format mermaid
+
+# 实时 SQLite 文件
+docker run --rm -v "$PWD:/work" ghcr.io/koedame/mermaid-erd-cli --db /work/dev.sqlite3 --format mermaid
+```
+
+镜像以非 root 用户运行，因此当它需要向你拥有的宿主目录写入时（如第一个示例），
+请添加 `-u "$(id -u):$(id -g)"`；仅输出到标准输出的命令则无需此参数。
+
+要连接运行在宿主机上的数据库时,请注意容器内的 `localhost` 指向容器自身。
+请使用 `host.docker.internal`(Docker Desktop)或 `--network host`(Linux):
+
+```bash
+docker run --rm --network host ghcr.io/koedame/mermaid-erd-cli \
+  --db "postgres://user:pass@localhost:5432/mydb" --format mermaid
+```
+
+要提供查看器服务时,在容器内绑定到 `0.0.0.0` 并发布端口——它只能通过你发布的
+端口访问:
+
+```bash
+docker run --rm -p 8080:8080 -v "$PWD:/work" ghcr.io/koedame/mermaid-erd-cli \
+  --db /work/dev.sqlite3 --serve --host 0.0.0.0 --port 8080
+# 然后打开 http://localhost:8080
+```
+
+如需自行构建镜像而非拉取:
+
+```bash
+docker build -t mermaid-erd-cli .
+docker run --rm -v "$PWD:/work" mermaid-erd-cli --schema schema.rb
+```
+
 ## 选项
 
 | 选项 | 说明 | 默认值 |

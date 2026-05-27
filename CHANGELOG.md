@@ -4,6 +4,23 @@ All notable changes to this project are documented here. The format is based on
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- Docker image for running the CLI without a local Node install. It is a
+  distroless, non-root runtime that bundles all three database drivers, built
+  from a `Dockerfile` and published per release to GitHub Container Registry
+  (`ghcr.io/koedame/mermaid-erd-cli`) and Docker Hub (`koedame/mermaid-erd-cli`).
+  The README documents volume mounts, reaching a host database, and serving the
+  viewer.
+
+### Changed
+
+- The database drivers (`pg`, `mysql2`, `better-sqlite3`) are now declared only
+  in `optionalDependencies` instead of being duplicated in `devDependencies`, so
+  `npm ci --omit=dev` keeps them. No change for `npm install` users.
+
 ## [0.2.0] - 2026-05-27
 
 ### Added
