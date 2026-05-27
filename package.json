@@ -1,6 +1,6 @@
 {
   "name": "mermaid-erd-cli",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Generate a Mermaid ER diagram from a live database (PostgreSQL/MySQL/SQLite) or a schema dump. Outputs an interactive HTML viewer or raw Mermaid/JSON to stdout. No ORM or framework required.",
   "type": "module",
   "bin": {
