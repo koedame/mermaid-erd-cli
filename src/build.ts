@@ -23,7 +23,7 @@ function sanitizeType(type: string): string {
     type
       .trim()
       .replace(/\s+/g, "_")
-      .replace(/[^A-Za-z0-9_()\[\]]/g, "") || "unknown"
+      .replace(/[^A-Za-z0-9_()[\]]/g, "") || "unknown"
   );
 }
 

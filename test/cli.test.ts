@@ -216,14 +216,17 @@ describe("CLI --serve", () => {
 
   // `--port -1` is rejected one layer earlier by parseArgs (a leading "-" looks
   // like an option), so negative values never reach this validator.
-  it.each(["abc", "0x50", "1e3", "3000.5", ""])(
-    "rejects the malformed --port %j before starting",
-    async (bad) => {
-      await expect(mermaidErd(["--db", dbPath, "--serve", "--port", bad])).rejects.toMatchObject({
-        stderr: expect.stringContaining("invalid --port"),
-      });
-    },
-  );
+  it.each([
+    "abc",
+    "0x50",
+    "1e3",
+    "3000.5",
+    "",
+  ])("rejects the malformed --port %j before starting", async (bad) => {
+    await expect(mermaidErd(["--db", dbPath, "--serve", "--port", bad])).rejects.toMatchObject({
+      stderr: expect.stringContaining("invalid --port"),
+    });
+  });
 
   it("warns that --port has no effect without --serve", async () => {
     const { stderr } = await mermaidErd(["--db", dbPath, "--format", "mermaid", "--port", "3000"]);
