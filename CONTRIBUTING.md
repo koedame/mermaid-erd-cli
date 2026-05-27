@@ -59,3 +59,5 @@ publish step.
 2. From a clean checkout of that commit, run `npm publish --access public`. The
    `prepack` script builds `dist/` before the tarball is assembled.
 3. Tag the released commit: `git tag vX.Y.Z && git push origin vX.Y.Z`.
+4. Create a GitHub release for the tag, using the `CHANGELOG.md` entry as the
+   notes: `gh release create vX.Y.Z --title vX.Y.Z --notes "<changelog section>"`.
