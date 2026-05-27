@@ -1,0 +1,1563 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title><%= app_name %> - Mermaid ERD</title>
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" href="data:image/svg+xml;base64,<%= Base64.encode64(logo) %>">
+  <style>
+    #mermaid-erd {
+      fill: #9c9c9c !important;
+    }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <header class="bg-[#336791]">
+      <nav class="mx-auto px-4">
+        <div class="flex w-full items-center justify-between py-4">
+          <h1 class="text-white inline-flex space-x-1 items-center">
+            <%= logo %>
+            <span class="font-bold">Mermaid ERD</span>
+          </h1>
+          <div class="space-x-4 inline-flex items-center">
+            <select v-model="language" @change="setLanguage(language)" class="text-xs border-0 rounded py-1 pl-3 pr-8 focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-[#336791]">
+              <option value="en">English</option>
+              <option value="ja">日本語 - Japanese</option>
+              <option value="zh">简体中文 - Chinese</option>
+              <option value="ko">한국어 - Korean</option>
+              <option value="es">Español - Spanish</option>
+              <option value="fr">Français - French</option>
+              <option value="de">Deutsch - German</option>
+              <option value="pt">Português - Portuguese</option>
+              <option value="ru">Русский - Russian</option>
+            </select>
+            <a href="https://github.com/koedame/mermaid-erd-cli" class="text-white hover:text-[#c9dbea]" target="_blank" rel="noopener noreferrer">
+              <svg class="h-6 w-6" fill="currentColor" viewBox="0 0 24 24">
+                <path
+                  fillRule="evenodd"
+                  d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"
+                  clipRule="evenodd"
+                />
+              </svg>
+            </a>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <div class="flex">
+      <div class="w-[250px] border-r border-gray-300 h-full flex-none p-2">
+        <div class="p-2">
+          <h2 class="font-medium text-gray-900 mb-1">{{i18n[language]["actions"]["title"]}}</h2>
+
+          <div class="space-y-2">
+            <button @click="reset" class="text-xs border border-gray-300 rounded py-1 w-full hover:bg-gray-100 flex justify-center items-center focus:ring focus:ring-[#336791] focus:ring-offset-2">
+              <svg class="w-4 h-4 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 15L3 9m0 0l6-6M3 9h12a6 6 0 010 12h-3" />
+              </svg>
+              <span>{{i18n[language]["actions"]["reset"]}}</span>
+            </button>
+
+            <button @click="onCopyUrl" class="text-xs border border-gray-300 rounded py-1 w-full hover:bg-gray-100 flex justify-center items-center focus:ring focus:ring-[#336791] focus:ring-offset-2">
+              <template v-if="isCopiedUrl">
+                <svg class="w-4 h-4 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                </svg>
+                <span>{{i18n[language]["actions"]["copied_url"]}}</span>
+              </template>
+              <template v-else>
+                <svg class="w-4 h-4 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 002.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 00-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25zM6.75 12h.008v.008H6.75V12zm0 3h.008v.008H6.75V15zm0 3h.008v.008H6.75V18z" />
+                </svg>
+                <span>{{i18n[language]["actions"]["copy_url"]}}</span>
+              </template>
+            </button>
+
+            <button @click="onCopyMermaid" class="text-xs border border-gray-300 rounded py-1 w-full hover:bg-gray-100 flex justify-center items-center focus:ring focus:ring-[#336791] focus:ring-offset-2">
+              <template v-if="isCopiedMermaid">
+                <svg class="w-4 h-4 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                </svg>
+                <span>{{i18n[language]["actions"]["copied_mermaid_code"]}}</span>
+              </template>
+              <template v-else>
+                <svg class="w-4 h-4 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 002.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 00-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25zM6.75 12h.008v.008H6.75V12zm0 3h.008v.008H6.75V15zm0 3h.008v.008H6.75V18z" />
+                </svg>
+                <span>{{i18n[language]["actions"]["copy_mermaid_code"]}}</span>
+              </template>
+            </button>
+
+            <button @click="onCopyMarkdown" class="text-xs border border-gray-300 rounded py-1 w-full hover:bg-gray-100 flex justify-center items-center focus:ring focus:ring-[#336791] focus:ring-offset-2">
+              <template v-if="isCopiedMarkdown">
+                <svg class="w-4 h-4 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                </svg>
+                <span>{{i18n[language]["actions"]["copied_markdown_code"]}}</span>
+              </template>
+              <template v-else>
+                <svg class="w-4 h-4 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 002.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 00-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25zM6.75 12h.008v.008H6.75V12zm0 3h.008v.008H6.75V15zm0 3h.008v.008H6.75V18z" />
+                </svg>
+                <span>{{i18n[language]["actions"]["copy_markdown_code"]}}</span>
+              </template>
+            </button>
+
+            <button @click="onDownloadSvg" class="text-xs border border-gray-300 rounded py-1 w-full hover:bg-gray-100 flex justify-center items-center focus:ring focus:ring-[#336791] focus:ring-offset-2">
+              <svg class="w-4 h-4 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
+              </svg>
+              <span>{{i18n[language]["actions"]["download_svg_file"]}}</span>
+            </button>
+
+            <button @click="onDownloadPng" class="text-xs border border-gray-300 rounded py-1 w-full hover:bg-gray-100 flex justify-center items-center focus:ring focus:ring-[#336791] focus:ring-offset-2">
+              <svg class="w-4 h-4 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
+              </svg>
+              <span>{{i18n[language]["actions"]["download_png_file"]}}</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="p-2">
+          <h2 class="font-medium text-gray-900 mb-1">{{i18n[language]["options"]["title"]}}</h2>
+
+          <div class="space-y-1">
+            <div class="min-w-0 flex-1 text-sm">
+              <label class="relative flex items-start cursor-pointer hover:bg-gray-100 rounded">
+                <input
+                  type="checkbox"
+                  class="h-4 w-4 rounded border-gray-300 text-[#336791] mr-2 focus:ring-[#336791]"
+                  v-model="isPreviewRelations"
+                  @change="updateHash"
+                />
+                <span class="text-xs text-gray-900">{{i18n[language]["options"]["preview_relationships"]}}</span>
+              </label>
+            </div>
+
+            <div class="min-w-0 flex-1 text-sm">
+              <label class="relative flex items-start cursor-pointer hover:bg-gray-100 rounded">
+                <input
+                  type="checkbox"
+                  class="h-4 w-4 rounded border-gray-300 text-[#336791] mr-2 focus:ring-[#336791]"
+                  v-model="isShowRelationComment"
+                  @change="updateHash"
+                />
+                <span class="text-xs text-gray-900">{{i18n[language]["options"]["show_relationship_comment"]}}</span>
+              </label>
+            </div>
+
+            <div class="min-w-0 flex-1 text-sm">
+              <label class="relative flex items-start cursor-pointer hover:bg-gray-100 rounded">
+                <input
+                  type="checkbox"
+                  class="h-4 w-4 rounded border-gray-300 text-[#336791] mr-2 focus:ring-[#336791]"
+                  v-model="isHideColumns"
+                  @change="updateHash"
+                />
+                <span class="text-xs text-gray-900">{{i18n[language]["options"]["hide_columns"]}}</span>
+              </label>
+            </div>
+
+            <div class="min-w-0 flex-1 text-sm">
+              <label :class="`relative flex items-start hover:bg-gray-100 rounded ${ isHideColumns ? 'cursor-not-allowed' : 'cursor-pointer' }`">
+                <input
+                  type="checkbox"
+                  :class="`h-4 w-4 rounded border-gray-300 mr-2 focus:ring-[#336791] ${ isHideColumns ? 'text-gray-400' : 'text-[#336791]'}`"
+                  v-model="isShowKey"
+                  @change="updateHash"
+                  :disabled="isHideColumns"
+                />
+                <span :class="`text-xs ${ isHideColumns ? 'text-gray-400' : 'text-gray-900'}`">{{i18n[language]["options"]["show_key"]}}</span>
+              </label>
+            </div>
+
+            <div class="min-w-0 flex-1 text-sm">
+              <label :class="`relative flex items-start hover:bg-gray-100 rounded ${ isHideColumns ? 'cursor-not-allowed' : 'cursor-pointer' }`">
+                <input
+                  type="checkbox"
+                  :class="`h-4 w-4 rounded border-gray-300 mr-2 focus:ring-[#336791] ${ isHideColumns ? 'text-gray-400' : 'text-[#336791]'}`"
+                  v-model="isShowComment"
+                  @change="updateHash"
+                  :disabled="isHideColumns"
+                />
+                <span :class="`text-xs ${ isHideColumns ? 'text-gray-400' : 'text-gray-900'}`">{{i18n[language]["options"]["show_column_comment"]}}</span>
+              </label>
+            </div>
+
+          </div>
+        </div>
+
+        <div class="p-2">
+          <h2 class="font-medium text-gray-900 mb-1">{{i18n[language]["models"]["title"]}}</h2>
+
+          <div>
+            <input type="search" class="rounded text-xs w-full py-1 px-2 border border-gray-300 bg-gray-100 focus:border-[#336791] focus:ring-[#336791]" :placeholder="i18n[language]['models']['filter']" v-model="filterText">
+          </div>
+
+          <div class="space-x-1 text-xs text-gray-900 my-1">
+            <span>{{i18n[language]["models"]["select"]}}</span>
+            <button @click="onSelectAll" class="text-[#336791] font-bold hover:text-[#244c6b] rounded focus:ring-2 focus:ring-[#336791] focus:ring-offset-1">{{i18n[language]["models"]["all"]}}</button>
+            <span>/</span>
+            <button @click="onUnselectAll" class="text-[#336791] font-bold hover:text-[#244c6b] rounded focus:ring-2 focus:ring-[#336791] focus:ring-offset-1">{{i18n[language]["models"]["none"]}}</button>
+          </div>
+
+          <div class="inline-flex items-center text-xs text-gray-700 mb-1" v-if="isExistsNoModelTable">
+            <svg class="text-orange-900 mr-1 h-3 w-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+            </svg>
+            <span>{{i18n[language]["models"]["no_model_file"]}}</span>
+          </div>
+
+          <!--
+            `max-h-[480px]` must match `VIRTUAL_LIST_VIEWPORT_PX` in setup() —
+            the JS uses 480 as the assumed viewport height before the first
+            scroll event arrives, and a mismatch would over- or under-render
+            rows. If you change one, change both.
+          -->
+          <div
+            ref="virtualListContainer"
+            @scroll.passive="virtualListScroll"
+            :class="['model-list', isVirtualizingModels ? 'overflow-y-auto max-h-[480px]' : '']"
+          >
+            <div :style="virtualListTopSpacerStyle"></div>
+
+            <label
+              v-for="model in virtualListVisibleModels"
+              :key="model.ModelName"
+              class="relative flex items-center cursor-pointer hover:bg-gray-100 rounded"
+              style="height: 24px;"
+            >
+              <div class="min-w-0 flex-1 text-xs text-gray-900 inline-flex items-center">
+                <input
+                  type="checkbox"
+                  class="h-4 w-4 rounded border-gray-300 text-[#336791] mr-2 focus:ring-[#336791] shrink-0"
+                  :value="model.ModelName"
+                  :checked="selectModels.includes(model.ModelName)"
+                  @change="onChange"
+                />
+                <svg v-if="!model.IsModelExist" class="text-orange-900 mr-1 h-3 w-3 shrink-0" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+                </svg>
+                <span class="truncate">{{model.ModelName}}</span>
+              </div>
+            </label>
+
+            <div :style="virtualListBottomSpacerStyle"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex-1 bg-gray-900">
+        <div class="space-x-2 inline-flex p-4">
+          <button @click="tab = 'erd'" :class="`text-xs py-1 px-2 rounded hover:bg-white focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-900 ${tab === 'erd' ? 'bg-white text-gray-900' : 'bg-gray-400 text-gray-900'}`">{{i18n[language]["tab"]["erd"]}}</button>
+          <button @click="tab = 'code'" :class="`text-xs py-1 px-2 rounded hover:bg-white focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-900 ${tab === 'code' ? 'bg-white text-gray-900' : 'bg-gray-400 text-gray-900'}`">{{i18n[language]["tab"]["code"]}}</button>
+        </div>
+        <div v-show="tab === 'erd'" ref="viewport" class="px-4 w-full min-h-[calc(100vh-56px-32px-56px)] relative overflow-hidden">
+          <div class="absolute inset-0" :style="zoomStyle" ref="zoomArea">
+            <div id="preview" :class="{ 'cursor-grab': isSpacePressed, 'cursor-grabbing': isDragging }"></div>
+          </div>
+
+          <div v-if="isEmptySelection" class="absolute inset-0 flex items-center justify-center pointer-events-none">
+            <div class="bg-gray-800/80 text-white text-sm px-4 py-3 rounded inline-flex flex-col items-center space-y-1 pointer-events-auto">
+              <span class="font-medium">{{i18n[language]["empty"]["title"]}}</span>
+              <span class="text-white/70 text-xs">{{i18n[language]["empty"]["hint"]}}</span>
+            </div>
+          </div>
+
+          <div v-if="renderError" class="absolute top-0 left-0 right-0 p-4 pointer-events-none">
+            <div class="bg-red-900/90 text-white text-xs px-3 py-2 rounded inline-flex items-start space-x-2 pointer-events-auto" role="alert">
+              <svg class="w-4 h-4 mt-0.5 shrink-0" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+              </svg>
+              <span>{{renderError}}</span>
+              <button @click="renderError = ''" class="text-white/80 hover:text-white" :aria-label="i18n[language]['errors']['dismiss']">✕</button>
+            </div>
+          </div>
+
+          <div class="absolute bottom-0 left-1/2 -translate-x-1/2 p-4">
+            <div class="bg-gray-800 text-white text-[10px] px-3 py-1.5 rounded inline-flex items-center space-x-6">
+              <div class="inline-flex items-center">
+                <span class="font-medium">{{i18n[language]["controls"]["movement"]}}:</span>
+                <span class="ml-1 text-white/60">{{i18n[language]["controls"]["space_drag"]}} / {{i18n[language]["controls"]["middle_drag"]}}</span>
+              </div>
+              <div class="inline-flex items-center">
+                <span class="font-medium">{{i18n[language]["controls"]["zoom"]}}:</span>
+                <span class="ml-1 text-white/60">{{i18n[language]["controls"]["mouse_wheel"]}} / {{i18n[language]["controls"]["pinch"]}}</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="absolute bottom-0 right-0 p-4 space-x-4 flex">
+            <div class="space-x-2 flex items-center">
+              <button class="text-xs py-1 px-2 rounded hover:bg-white focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-900 bg-gray-400 text-gray-900" @click="zoomIn">+</button>
+              <button class="text-xs py-1 px-2 rounded hover:bg-white focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-900 bg-gray-400 text-gray-900" @click="zoomOut">-</button>
+              <button :title="i18n[language]['controls']['reset_view']" :aria-label="i18n[language]['controls']['reset_view']" class="text-xs py-1 px-2 rounded hover:bg-white focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-900 bg-gray-400 text-gray-900" @click="resetView">⌂</button>
+            </div>
+            <div class="flex items-center space-x-2">
+              <button class="text-xs py-1 px-2 rounded hover:bg-white focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-900 bg-gray-400 text-gray-900" @click="moveLeft">←</button>
+              <div class="flex flex-col space-y-8">
+                <button class="text-xs py-1 px-2 rounded hover:bg-white focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-900 bg-gray-400 text-gray-900" @click="moveUp">↑</button>
+                <button class="text-xs py-1 px-2 rounded hover:bg-white focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-900 bg-gray-400 text-gray-900" @click="moveDown">↓</button>
+              </div>
+              <button class="text-xs py-1 px-2 rounded hover:bg-white focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-900 bg-gray-400 text-gray-900" @click="moveRight">→</button>
+            </div>
+          </div>
+        </div>
+        <textarea v-show="tab === 'code'" class="px-4 bg-gray-900 text-gray-300 font-mono w-full text-xs min-h-[calc(100vh-56px-32px-56px)] border-0 focus:ring-0" readonly v-model="mermaidErd"></textarea>
+      </div>
+    </div>
+
+    <footer class="bg-gray-100">
+      <p class="text-center text-xs text-gray-600 py-2">
+        <a href="https://github.com/koedame/mermaid-erd-cli" class="hover:text-gray-400" target="_blank" rel="noopener noreferrer">
+          Mermaid ERD v<%= version %>
+        </a>
+      </p>
+    </footer>
+  </div>
+
+  <script><%= tailwindcss_js %></script>
+  <script><%= mermaid_js %></script>
+  <script><%= vue_js %></script>
+
+  <script>window.SCHEMA_DATA=<%= result.to_json %></script>
+  <script>
+    window.i18n = {
+      en: {
+        actions: {
+          title: 'Actions',
+          reset: 'Reset',
+          copy_mermaid_code: 'Copy Mermaid Code',
+          copied_mermaid_code: 'Copied Mermaid Code',
+          copy_markdown_code: 'Copy Markdown Code',
+          copied_markdown_code: 'Copied Markdown Code',
+          copy_url: 'Copy Link for Sharing',
+          copied_url: 'Copied Link for Sharing',
+          download_svg_file: 'Download SVG File',
+          download_png_file: 'Download PNG File',
+        },
+        options: {
+          title: 'Options',
+          preview_relationships: 'Preview Relationships',
+          show_relationship_comment: 'Show Relationship Comment',
+          show_key: 'Show Key',
+          show_column_comment: 'Show Column Comment',
+          hide_columns: 'Hide Columns',
+        },
+        models: {
+          title: 'Models',
+          select: 'Select',
+          all: 'All',
+          none: 'None',
+          filter: 'Filter',
+          no_model_file: 'No Model File',
+        },
+        empty: {
+          title: 'No models selected',
+          hint: 'Pick models from the sidebar to render the ERD.',
+        },
+        errors: {
+          render_failed: 'Mermaid failed to render the current selection. Check the browser console for details.',
+          download_failed: 'Download failed. Check the browser console for details.',
+          copy_failed: 'Copy to clipboard failed. Browsers require a recent user gesture and a secure context.',
+          dismiss: 'Dismiss',
+        },
+        tab: {
+          erd: 'ERD',
+          code: 'Code',
+        },
+        controls: {
+          movement: 'Movement',
+          zoom: 'Zoom',
+          space_drag: 'Space + Mouse Drag',
+          middle_drag: 'Middle Click + Drag',
+          mouse_wheel: 'Mouse Wheel',
+          pinch: 'Pinch In/Out',
+          reset_view: 'Reset View',
+        }
+      },
+      ja: {
+        actions: {
+          title: '操作',
+          reset: 'リセット',
+          copy_mermaid_code: 'Mermaid コードをコピー',
+          copied_mermaid_code: 'Mermaid コードをコピーしました',
+          copy_markdown_code: 'Markdown コードをコピー',
+          copied_markdown_code: 'Markdown コードをコピーしました',
+          copy_url: '共有リンクをコピー',
+          copied_url: 'リンクをコピーしました',
+          download_svg_file: 'SVG ファイルをダウンロード',
+          download_png_file: 'PNG ファイルをダウンロード',
+        },
+        options: {
+          title: '設定',
+          preview_relationships: 'リレーションをプレビュー',
+          show_relationship_comment: 'リレーションのコメントを表示',
+          show_key: 'キーを表示',
+          show_column_comment: 'コメントを表示',
+          hide_columns: 'カラムを非表示',
+        },
+        models: {
+          title: 'モデル',
+          select: '選択',
+          all: '全て',
+          none: 'なし',
+          filter: '絞り込み',
+          no_model_file: 'モデル未定義',
+        },
+        empty: {
+          title: 'モデルが選択されていません',
+          hint: 'サイドバーからモデルを選択して ER 図を描画します。',
+        },
+        errors: {
+          render_failed: 'Mermaid の描画に失敗しました。詳細はブラウザのコンソールを確認してください。',
+          download_failed: 'ダウンロードに失敗しました。詳細はブラウザのコンソールを確認してください。',
+          copy_failed: 'クリップボードへのコピーに失敗しました。ブラウザはユーザー操作直後かつセキュアな環境を要求します。',
+          dismiss: '閉じる',
+        },
+        tab: {
+          erd: 'ER図',
+          code: 'コード',
+        },
+        controls: {
+          movement: '移動方法',
+          zoom: '拡大/縮小',
+          space_drag: 'スペースキー + マウスドラッグ',
+          middle_drag: '中クリック + ドラッグ',
+          mouse_wheel: 'マウスホイール',
+          pinch: 'ピンチイン/アウト',
+          reset_view: 'ビューをリセット',
+        }
+      },
+      zh: {
+        actions: {
+          title: '操作',
+          reset: '重置',
+          copy_mermaid_code: '复制 Mermaid 代码',
+          copied_mermaid_code: '已复制 Mermaid 代码',
+          copy_markdown_code: '复制 Markdown 代码',
+          copied_markdown_code: '已复制 Markdown 代码',
+          copy_url: '复制分享链接',
+          copied_url: '已复制分享链接',
+          download_svg_file: '下载 SVG 文件',
+          download_png_file: '下载 PNG 文件',
+        },
+        options: {
+          title: '选项',
+          preview_relationships: '预览关系',
+          show_relationship_comment: '显示关系注释',
+          show_key: '显示键',
+          show_column_comment: '显示列注释',
+          hide_columns: '隐藏列',
+        },
+        models: {
+          title: '模型',
+          select: '选择',
+          all: '全部',
+          none: '无',
+          filter: '筛选',
+          no_model_file: '无模型文件',
+        },
+        empty: {
+          title: '未选择模型',
+          hint: '从侧边栏选择模型以渲染 ER 图。',
+        },
+        errors: {
+          render_failed: 'Mermaid 无法渲染当前选择。请查看浏览器控制台了解详情。',
+          download_failed: '下载失败。请查看浏览器控制台了解详情。',
+          copy_failed: '复制到剪贴板失败。浏览器要求近期的用户操作和安全上下文。',
+          dismiss: '关闭',
+        },
+        tab: {
+          erd: 'ER 图',
+          code: '代码',
+        },
+        controls: {
+          movement: '移动',
+          zoom: '缩放',
+          space_drag: '空格 + 鼠标拖动',
+          middle_drag: '中键 + 拖动',
+          mouse_wheel: '鼠标滚轮',
+          pinch: '双指缩放',
+          reset_view: '重置视图',
+        }
+      },
+      ko: {
+        actions: {
+          title: '작업',
+          reset: '초기화',
+          copy_mermaid_code: 'Mermaid 코드 복사',
+          copied_mermaid_code: 'Mermaid 코드 복사됨',
+          copy_markdown_code: 'Markdown 코드 복사',
+          copied_markdown_code: 'Markdown 코드 복사됨',
+          copy_url: '공유 링크 복사',
+          copied_url: '공유 링크 복사됨',
+          download_svg_file: 'SVG 파일 다운로드',
+          download_png_file: 'PNG 파일 다운로드',
+        },
+        options: {
+          title: '옵션',
+          preview_relationships: '관계 미리보기',
+          show_relationship_comment: '관계 주석 표시',
+          show_key: '키 표시',
+          show_column_comment: '컬럼 주석 표시',
+          hide_columns: '컬럼 숨기기',
+        },
+        models: {
+          title: '모델',
+          select: '선택',
+          all: '전체',
+          none: '없음',
+          filter: '필터',
+          no_model_file: '모델 파일 없음',
+        },
+        empty: {
+          title: '선택된 모델 없음',
+          hint: '사이드바에서 모델을 선택하여 ERD를 그립니다.',
+        },
+        errors: {
+          render_failed: 'Mermaid가 현재 선택을 렌더링하지 못했습니다. 자세한 내용은 브라우저 콘솔을 확인하세요.',
+          download_failed: '다운로드에 실패했습니다. 자세한 내용은 브라우저 콘솔을 확인하세요.',
+          copy_failed: '클립보드 복사에 실패했습니다. 브라우저는 최근의 사용자 동작과 보안 컨텍스트를 요구합니다.',
+          dismiss: '닫기',
+        },
+        tab: {
+          erd: 'ERD',
+          code: '코드',
+        },
+        controls: {
+          movement: '이동',
+          zoom: '확대/축소',
+          space_drag: '스페이스 + 마우스 드래그',
+          middle_drag: '가운데 클릭 + 드래그',
+          mouse_wheel: '마우스 휠',
+          pinch: '핀치 확대/축소',
+          reset_view: '뷰 초기화',
+        }
+      },
+      es: {
+        actions: {
+          title: 'Acciones',
+          reset: 'Restablecer',
+          copy_mermaid_code: 'Copiar código Mermaid',
+          copied_mermaid_code: 'Código Mermaid copiado',
+          copy_markdown_code: 'Copiar código Markdown',
+          copied_markdown_code: 'Código Markdown copiado',
+          copy_url: 'Copiar enlace para compartir',
+          copied_url: 'Enlace copiado',
+          download_svg_file: 'Descargar archivo SVG',
+          download_png_file: 'Descargar archivo PNG',
+        },
+        options: {
+          title: 'Opciones',
+          preview_relationships: 'Vista previa de relaciones',
+          show_relationship_comment: 'Mostrar comentario de relación',
+          show_key: 'Mostrar clave',
+          show_column_comment: 'Mostrar comentario de columna',
+          hide_columns: 'Ocultar columnas',
+        },
+        models: {
+          title: 'Modelos',
+          select: 'Seleccionar',
+          all: 'Todos',
+          none: 'Ninguno',
+          filter: 'Filtrar',
+          no_model_file: 'Sin archivo de modelo',
+        },
+        empty: {
+          title: 'Ningún modelo seleccionado',
+          hint: 'Selecciona modelos en la barra lateral para generar el ERD.',
+        },
+        errors: {
+          render_failed: 'Mermaid no pudo renderizar la selección actual. Consulta la consola del navegador para más detalles.',
+          download_failed: 'Error al descargar. Consulta la consola del navegador para más detalles.',
+          copy_failed: 'Error al copiar al portapapeles. Los navegadores requieren una acción reciente del usuario y un contexto seguro.',
+          dismiss: 'Cerrar',
+        },
+        tab: {
+          erd: 'ERD',
+          code: 'Código',
+        },
+        controls: {
+          movement: 'Movimiento',
+          zoom: 'Zoom',
+          space_drag: 'Espacio + arrastrar con el ratón',
+          middle_drag: 'Clic central + arrastrar',
+          mouse_wheel: 'Rueda del ratón',
+          pinch: 'Pellizcar para acercar/alejar',
+          reset_view: 'Restablecer vista',
+        }
+      },
+      fr: {
+        actions: {
+          title: 'Actions',
+          reset: 'Réinitialiser',
+          copy_mermaid_code: 'Copier le code Mermaid',
+          copied_mermaid_code: 'Code Mermaid copié',
+          copy_markdown_code: 'Copier le code Markdown',
+          copied_markdown_code: 'Code Markdown copié',
+          copy_url: 'Copier le lien de partage',
+          copied_url: 'Lien copié',
+          download_svg_file: 'Télécharger le fichier SVG',
+          download_png_file: 'Télécharger le fichier PNG',
+        },
+        options: {
+          title: 'Options',
+          preview_relationships: 'Aperçu des relations',
+          show_relationship_comment: 'Afficher le commentaire de relation',
+          show_key: 'Afficher la clé',
+          show_column_comment: 'Afficher le commentaire de colonne',
+          hide_columns: 'Masquer les colonnes',
+        },
+        models: {
+          title: 'Modèles',
+          select: 'Sélectionner',
+          all: 'Tout',
+          none: 'Aucun',
+          filter: 'Filtrer',
+          no_model_file: 'Aucun fichier de modèle',
+        },
+        empty: {
+          title: 'Aucun modèle sélectionné',
+          hint: 'Sélectionnez des modèles dans la barre latérale pour générer l’ERD.',
+        },
+        errors: {
+          render_failed: 'Mermaid n’a pas pu afficher la sélection actuelle. Consultez la console du navigateur pour plus de détails.',
+          download_failed: 'Échec du téléchargement. Consultez la console du navigateur pour plus de détails.',
+          copy_failed: 'Échec de la copie dans le presse-papiers. Les navigateurs exigent une action récente de l’utilisateur et un contexte sécurisé.',
+          dismiss: 'Fermer',
+        },
+        tab: {
+          erd: 'ERD',
+          code: 'Code',
+        },
+        controls: {
+          movement: 'Déplacement',
+          zoom: 'Zoom',
+          space_drag: 'Espace + glisser la souris',
+          middle_drag: 'Clic du milieu + glisser',
+          mouse_wheel: 'Molette de la souris',
+          pinch: 'Pincer pour zoomer',
+          reset_view: 'Réinitialiser la vue',
+        }
+      },
+      de: {
+        actions: {
+          title: 'Aktionen',
+          reset: 'Zurücksetzen',
+          copy_mermaid_code: 'Mermaid-Code kopieren',
+          copied_mermaid_code: 'Mermaid-Code kopiert',
+          copy_markdown_code: 'Markdown-Code kopieren',
+          copied_markdown_code: 'Markdown-Code kopiert',
+          copy_url: 'Freigabelink kopieren',
+          copied_url: 'Link kopiert',
+          download_svg_file: 'SVG-Datei herunterladen',
+          download_png_file: 'PNG-Datei herunterladen',
+        },
+        options: {
+          title: 'Optionen',
+          preview_relationships: 'Beziehungen vorschauen',
+          show_relationship_comment: 'Beziehungskommentar anzeigen',
+          show_key: 'Schlüssel anzeigen',
+          show_column_comment: 'Spaltenkommentar anzeigen',
+          hide_columns: 'Spalten ausblenden',
+        },
+        models: {
+          title: 'Modelle',
+          select: 'Auswählen',
+          all: 'Alle',
+          none: 'Keine',
+          filter: 'Filtern',
+          no_model_file: 'Keine Modelldatei',
+        },
+        empty: {
+          title: 'Keine Modelle ausgewählt',
+          hint: 'Wählen Sie Modelle in der Seitenleiste, um das ERD zu erzeugen.',
+        },
+        errors: {
+          render_failed: 'Mermaid konnte die aktuelle Auswahl nicht rendern. Details finden Sie in der Browser-Konsole.',
+          download_failed: 'Download fehlgeschlagen. Details finden Sie in der Browser-Konsole.',
+          copy_failed: 'Kopieren in die Zwischenablage fehlgeschlagen. Browser erfordern eine kürzliche Benutzeraktion und einen sicheren Kontext.',
+          dismiss: 'Schließen',
+        },
+        tab: {
+          erd: 'ERD',
+          code: 'Code',
+        },
+        controls: {
+          movement: 'Bewegung',
+          zoom: 'Zoom',
+          space_drag: 'Leertaste + Maus ziehen',
+          middle_drag: 'Mittelklick + Ziehen',
+          mouse_wheel: 'Mausrad',
+          pinch: 'Zwei-Finger-Zoom',
+          reset_view: 'Ansicht zurücksetzen',
+        }
+      },
+      pt: {
+        actions: {
+          title: 'Ações',
+          reset: 'Redefinir',
+          copy_mermaid_code: 'Copiar código Mermaid',
+          copied_mermaid_code: 'Código Mermaid copiado',
+          copy_markdown_code: 'Copiar código Markdown',
+          copied_markdown_code: 'Código Markdown copiado',
+          copy_url: 'Copiar link de compartilhamento',
+          copied_url: 'Link copiado',
+          download_svg_file: 'Baixar arquivo SVG',
+          download_png_file: 'Baixar arquivo PNG',
+        },
+        options: {
+          title: 'Opções',
+          preview_relationships: 'Pré-visualizar relações',
+          show_relationship_comment: 'Mostrar comentário da relação',
+          show_key: 'Mostrar chave',
+          show_column_comment: 'Mostrar comentário da coluna',
+          hide_columns: 'Ocultar colunas',
+        },
+        models: {
+          title: 'Modelos',
+          select: 'Selecionar',
+          all: 'Todos',
+          none: 'Nenhum',
+          filter: 'Filtrar',
+          no_model_file: 'Nenhum arquivo de modelo',
+        },
+        empty: {
+          title: 'Nenhum modelo selecionado',
+          hint: 'Selecione modelos na barra lateral para gerar o ERD.',
+        },
+        errors: {
+          render_failed: 'O Mermaid não conseguiu renderizar a seleção atual. Verifique o console do navegador para detalhes.',
+          download_failed: 'Falha no download. Verifique o console do navegador para detalhes.',
+          copy_failed: 'Falha ao copiar para a área de transferência. Os navegadores exigem uma ação recente do usuário e um contexto seguro.',
+          dismiss: 'Fechar',
+        },
+        tab: {
+          erd: 'ERD',
+          code: 'Código',
+        },
+        controls: {
+          movement: 'Movimento',
+          zoom: 'Zoom',
+          space_drag: 'Espaço + arrastar o mouse',
+          middle_drag: 'Clique do meio + arrastar',
+          mouse_wheel: 'Roda do mouse',
+          pinch: 'Pinçar para ampliar/reduzir',
+          reset_view: 'Redefinir visualização',
+        }
+      },
+      ru: {
+        actions: {
+          title: 'Действия',
+          reset: 'Сбросить',
+          copy_mermaid_code: 'Копировать код Mermaid',
+          copied_mermaid_code: 'Код Mermaid скопирован',
+          copy_markdown_code: 'Копировать код Markdown',
+          copied_markdown_code: 'Код Markdown скопирован',
+          copy_url: 'Копировать ссылку для общего доступа',
+          copied_url: 'Ссылка скопирована',
+          download_svg_file: 'Скачать файл SVG',
+          download_png_file: 'Скачать файл PNG',
+        },
+        options: {
+          title: 'Параметры',
+          preview_relationships: 'Предпросмотр связей',
+          show_relationship_comment: 'Показывать комментарий связи',
+          show_key: 'Показывать ключ',
+          show_column_comment: 'Показывать комментарий столбца',
+          hide_columns: 'Скрыть столбцы',
+        },
+        models: {
+          title: 'Модели',
+          select: 'Выбрать',
+          all: 'Все',
+          none: 'Нет',
+          filter: 'Фильтр',
+          no_model_file: 'Нет файла модели',
+        },
+        empty: {
+          title: 'Модели не выбраны',
+          hint: 'Выберите модели на боковой панели, чтобы построить ER-диаграмму.',
+        },
+        errors: {
+          render_failed: 'Mermaid не смог отобразить текущий выбор. Подробности см. в консоли браузера.',
+          download_failed: 'Не удалось скачать. Подробности см. в консоли браузера.',
+          copy_failed: 'Не удалось скопировать в буфер обмена. Браузеры требуют недавнего действия пользователя и безопасного контекста.',
+          dismiss: 'Закрыть',
+        },
+        tab: {
+          erd: 'ER-диаграмма',
+          code: 'Код',
+        },
+        controls: {
+          movement: 'Перемещение',
+          zoom: 'Масштаб',
+          space_drag: 'Пробел + перетаскивание мышью',
+          middle_drag: 'Средняя кнопка + перетаскивание',
+          mouse_wheel: 'Колесо мыши',
+          pinch: 'Щипок для масштабирования',
+          reset_view: 'Сбросить вид',
+        }
+      }
+    }
+  </script>
+  <script>
+    const App = {
+      setup(){
+        const language = Vue.ref('en')
+        const isCopiedMermaid = Vue.ref(false)
+        const isCopiedMarkdown = Vue.ref(false)
+        const tab = Vue.ref('erd')
+
+        const schemaData = {
+          ...window.SCHEMA_DATA,
+          Models: window.SCHEMA_DATA.Models.sort((a, b) => a.ModelName < b.ModelName ? -1 : 1)
+        }
+        const selectModels = Vue.ref([])
+        const isPreviewRelations = Vue.ref(false)
+        const isShowRelationComment = Vue.ref(false)
+        const isShowKey = Vue.ref(false)
+        const isShowComment = Vue.ref(false)
+        const isHideColumns = Vue.ref(false)
+        // Surfaced render failure: Mermaid throws on invalid input. Without a
+        // visible signal the user just sees a stale (or empty) preview — so we
+        // expose it on the overlay.
+        const renderError = Vue.ref('')
+
+        const MIN_SCALE = 0.1
+        const MAX_SCALE = 5
+        // Wheel delta in pixels → zoom factor. Exponential keeps each step perceptually uniform
+        // across the whole range, and lets trackpad (small deltas) and mouse-wheel (large deltas)
+        // share the same code path.
+        const WHEEL_ZOOM_SENSITIVITY = 0.0015
+        const BUTTON_ZOOM_FACTOR = 1.2
+        const PAN_STEP_PX = 60
+        // Approximate pixels-per-line / pixels-per-page for wheel events that don't report
+        // DOM_DELTA_PIXEL. Firefox defaults to DOM_DELTA_LINE (deltaMode === 1, e.g. ±3 per detent)
+        // — without normalisation, exp(-3 * 0.0015) ≈ 0.9955 produces almost no visible zoom.
+        const WHEEL_LINE_HEIGHT_PX = 16
+
+        const scale = Vue.ref(1)
+        const posX = Vue.ref(0)
+        const posY = Vue.ref(0)
+        // `zoomArea` is the transformed inner element; `viewport` is its untransformed parent
+        // and the only stable reference frame for cursor-anchored zoom maths.
+        const zoomArea = Vue.ref(null)
+        const viewport = Vue.ref(null)
+        // Manage space key press state
+        const isSpacePressed = Vue.ref(false)
+        // Manage dragging state
+        const isDragging = Vue.ref(false)
+        // Record distance between two touch points
+        let lastTouchDistance = 0
+        // Record mouse position
+        let lastMouseX = 0
+        let lastMouseY = 0
+
+        // Reject non-finite scale candidates so a single bad input (NaN deltaY, divide-by-zero
+        // factor, …) can't poison every subsequent transform with NaN.
+        const clampScale = (s) => {
+          if (!Number.isFinite(s)) return scale.value
+          return Math.min(Math.max(s, MIN_SCALE), MAX_SCALE)
+        }
+
+        // Apply zoom by `factor` anchored at the given client coordinates so the world point
+        // currently under (clientX, clientY) stays under it after the scale change.
+        // The transform is `translate(tx, ty) scale(s)` with origin (0,0): `translate` runs
+        // before `scale` (CSS applies transforms right-to-left), so tx/ty are screen pixels
+        // relative to the untransformed viewport's top-left.
+        const zoomAt = (clientX, clientY, factor) => {
+          if (!Number.isFinite(factor) || factor <= 0) return
+          if (!Number.isFinite(scale.value) || scale.value <= 0) {
+            // Recover from a previously corrupted state instead of silently propagating NaN.
+            scale.value = 1
+            posX.value = 0
+            posY.value = 0
+            return
+          }
+          const newScale = clampScale(scale.value * factor)
+          if (!Number.isFinite(newScale) || newScale === scale.value) return
+          const container = viewport.value
+          if (!container) return
+          const rect = container.getBoundingClientRect()
+          if (rect.width === 0 || rect.height === 0) return
+          const cx = clientX - rect.left
+          const cy = clientY - rect.top
+          const ratio = newScale / scale.value
+          posX.value = cx + (posX.value - cx) * ratio
+          posY.value = cy + (posY.value - cy) * ratio
+          scale.value = newScale
+        }
+
+        const zoomCentered = (factor) => {
+          const container = viewport.value
+          if (!container) return
+          const rect = container.getBoundingClientRect()
+          if (rect.width === 0 || rect.height === 0) return
+          zoomAt(rect.left + rect.width / 2, rect.top + rect.height / 2, factor)
+        }
+
+        const resetView = () => {
+          scale.value = 1
+          posX.value = 0
+          posY.value = 0
+        }
+
+        // Calculate distance between two touch points
+        const getDistance = (touches) => {
+          return Math.hypot(
+            touches[0].clientX - touches[1].clientX,
+            touches[0].clientY - touches[1].clientY
+          )
+        }
+
+        // Calculate center point of two touch positions
+        const getTouchCenter = (touches) => {
+          return {
+            x: (touches[0].clientX + touches[1].clientX) / 2,
+            y: (touches[0].clientY + touches[1].clientY) / 2
+          }
+        }
+
+        // Handle touch start
+        const handleTouchStart = (e) => {
+          if (e.touches.length === 2) {
+            e.preventDefault()
+            lastTouchDistance = getDistance(e.touches)
+          } else {
+            // Any non-2-touch state invalidates the baseline — otherwise a stale distance
+            // from a previous gesture leaks into the next pinch (e.g. 1→2→3→2 finger
+            // transitions on iOS) and produces a discontinuous jump on the first frame.
+            lastTouchDistance = 0
+          }
+        }
+
+        // Handle touch move (pinch in/out for zoom). Uses the ratio of touch-point distances —
+        // matches platform pinch gesture conventions (each pinch unit scales by the same factor
+        // regardless of starting spread).
+        const handleTouchMove = (e) => {
+          if (e.touches.length !== 2) {
+            // Invalidate the pinch baseline as soon as we leave the 2-finger state, so the next
+            // 2-finger frame is treated as a fresh start instead of comparing to a stale distance.
+            lastTouchDistance = 0
+            return
+          }
+          // Gate preventDefault on the cursor being over the diagram, so 2-finger gestures on
+          // surrounding UI (sidebar, footer) still trigger their default browser behaviour.
+          if (!viewport.value || !viewport.value.contains(e.target)) return
+          e.preventDefault()
+          const newDistance = getDistance(e.touches)
+          if (lastTouchDistance > 0 && newDistance > 0) {
+            const center = getTouchCenter(e.touches)
+            zoomAt(center.x, center.y, newDistance / lastTouchDistance)
+          }
+          lastTouchDistance = newDistance
+        }
+
+        // Handle touch end. Any drop below 2 active touches invalidates the pinch baseline so
+        // a re-pinch starts fresh.
+        const handleTouchEnd = (e) => {
+          if (e.touches.length < 2) {
+            lastTouchDistance = 0
+          }
+        }
+
+        // Handle key down (space key for drag mode toggle)
+        const handleKeyDown = (e) => {
+          if (e.code === 'Space' && !isSpacePressed.value) {
+            if (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA') {
+              return
+            }
+            isSpacePressed.value = true
+            e.preventDefault()
+          }
+        }
+
+        // Handle key up
+        const handleKeyUp = (e) => {
+          if (e.code === 'Space') {
+            isSpacePressed.value = false
+            isDragging.value = false
+          }
+        }
+
+        // Handle mouse down (start dragging)
+        const handleMouseDown = (e) => {
+          if (isSpacePressed.value || e.button === 1) {
+            isDragging.value = true
+            lastMouseX = e.clientX
+            lastMouseY = e.clientY
+            e.preventDefault()
+          }
+        }
+
+        // Handle mouse move (movement while dragging). Translates are in screen pixels because
+        // `translate` runs before `scale` in the transform (CSS applies transforms right-to-left),
+        // so the scale factor never multiplies the translate — no compensation needed.
+        const handleMouseMove = (e) => {
+          if (isDragging.value) {
+            posX.value += e.clientX - lastMouseX
+            posY.value += e.clientY - lastMouseY
+            lastMouseX = e.clientX
+            lastMouseY = e.clientY
+            e.preventDefault()
+          }
+        }
+
+        // Handle mouse up (end dragging)
+        const handleMouseUp = (e) => {
+          if (e.button === 1) {
+            e.preventDefault()
+          }
+          isDragging.value = false
+        }
+
+        // Handle mouse wheel (zoom). Exponential factor derived from wheel delta gives smooth,
+        // device-agnostic zooming and anchors the zoom at the cursor.
+        const handleWheel = (e) => {
+          if (!viewport.value || !viewport.value.contains(e.target)) return
+          // Pure horizontal trackpad swipes (deltaY === 0) shouldn't be swallowed — the user is
+          // navigating, not zooming. Returning without preventDefault lets the browser handle it.
+          if (e.deltaY === 0) return
+          e.preventDefault()
+          // Normalise non-pixel deltaMode (Firefox defaults to line mode); otherwise the
+          // exp() factor collapses to ~1.0 and the wheel feels unresponsive. For page mode,
+          // scale against the zoomable area's own height — page-mode events are rare, but
+          // when they fire we want a step proportional to the surface being zoomed, not the
+          // whole document viewport.
+          const pageHeightPx = (viewport.value && viewport.value.clientHeight) || window.innerHeight
+          const pixelDeltaY = e.deltaMode === 1
+            ? e.deltaY * WHEEL_LINE_HEIGHT_PX
+            : e.deltaMode === 2
+              ? e.deltaY * pageHeightPx
+              : e.deltaY
+          zoomAt(e.clientX, e.clientY, Math.exp(-pixelDeltaY * WHEEL_ZOOM_SENSITIVITY))
+        }
+
+        const zoomStyle = Vue.computed(() => {
+          return {
+            transform: `translate(${posX.value}px, ${posY.value}px) scale(${scale.value})`,
+            transformOrigin: '0 0'
+          }
+        })
+
+        const zoomIn = () => zoomCentered(BUTTON_ZOOM_FACTOR)
+        const zoomOut = () => zoomCentered(1 / BUTTON_ZOOM_FACTOR)
+
+        const move = (dxPx, dyPx) => {
+          posX.value += dxPx
+          posY.value += dyPx
+        }
+
+        const moveUp = () => move(0, -PAN_STEP_PX)
+        const moveDown = () => move(0, PAN_STEP_PX)
+        const moveLeft = () => move(-PAN_STEP_PX, 0)
+        const moveRight = () => move(PAN_STEP_PX, 0)
+
+        const restoreFromHash = () => {
+          // A completely empty hash is the normal "first visit" state, not a
+          // parse failure — silently fall through to `reset()`. Anything else
+          // that fails to parse is likely a shared link the user copy-pasted
+          // and now can't restore from; surface a warning so they have a
+          // breadcrumb instead of just "my settings disappeared."
+          const raw = location.hash.substr(1)
+          if (!raw) {
+            reset()
+            return
+          }
+          try {
+            const parsedData = JSON.parse(atob(raw))
+            selectModels.value = parsedData.selectModels || []
+            isPreviewRelations.value = !!parsedData.isPreviewRelations
+            isShowRelationComment.value = !!parsedData.isShowRelationComment
+            isShowKey.value = !!parsedData.isShowKey
+            isShowComment.value = !!parsedData.isShowComment
+            isHideColumns.value = !!parsedData.isHideColumns
+          } catch (err) {
+            console.warn('mermaid_erd: could not restore from URL hash, resetting to defaults.', err)
+            reset()
+          }
+        }
+
+        // Default to NO models selected. Issue #169: on schemas with hundreds of
+        // models, rendering the full diagram up front made Safari/Firefox crawl
+        // — and most users only want a focused slice anyway. Users can still
+        // bulk-select via the "All" button in the sidebar.
+        const reset = () => {
+          selectModels.value = []
+          isPreviewRelations.value = false
+          isShowRelationComment.value = false
+          isShowKey.value = false
+          isShowComment.value = false
+          isHideColumns.value = false
+          updateHash()
+        }
+
+        const updateHash = () => {
+          location.hash = btoa(JSON.stringify({
+            selectModels: selectModels.value,
+            isPreviewRelations: isPreviewRelations.value,
+            isShowRelationComment: isShowRelationComment.value,
+            isShowKey: isShowKey.value,
+            isShowComment: isShowComment.value,
+            isHideColumns: isHideColumns.value,
+          }))
+        }
+
+        const onChange = (e) => {
+          if (e.target.checked) {
+            selectModels.value.push(e.target.value)
+          } else {
+            selectModels.value = selectModels.value.filter((selectModel) => selectModel !== e.target.value)
+          }
+          selectModels.value
+          updateHash()
+        }
+
+        const onSelectAll = () => {
+          filteredModelList.value.forEach((model) => {
+            if (!selectModels.value.includes(model.ModelName)) {
+              selectModels.value.push(model.ModelName)
+            }
+          })
+          updateHash()
+        }
+
+        const onUnselectAll = () => {
+          selectModels.value = selectModels.value.filter((model) => {
+            return !filteredModelList.value.some((fm) => fm.ModelName === model)
+          })
+          updateHash()
+        }
+
+        isCopiedUrl = Vue.ref(false)
+        // Clipboard writes can reject — Safari without a user gesture, insecure
+        // contexts, sandboxed iframes. Treat the rejection as a real failure
+        // instead of silently flashing "Copied" while nothing actually landed.
+        const clipboardWrite = (text, copiedRef) => {
+          const flashCopied = () => {
+            copiedRef.value = true
+            setTimeout(() => { copiedRef.value = false }, 1000)
+          }
+          const writePromise = navigator.clipboard && navigator.clipboard.writeText
+            ? navigator.clipboard.writeText(text)
+            : Promise.reject(new Error('navigator.clipboard.writeText unavailable'))
+          writePromise.then(flashCopied).catch((err) => {
+            console.error('mermaid_erd: clipboard write failed', err)
+            renderError.value = i18n[language.value]['errors']['copy_failed']
+          })
+        }
+        const onCopyUrl = () => clipboardWrite(location.href, isCopiedUrl)
+
+        const mermaidErd = Vue.computed(() => {
+          const lines = []
+          lines.push('erDiagram')
+          lines.push('    %% --------------------------------------------------------')
+          lines.push('    %% Generated by "Mermaid ERD"')
+          lines.push('    %% https://github.com/koedame/mermaid-erd-cli')
+          lines.push(`    %% Restore Hash: ${location.hash}`)
+          lines.push('    %% --------------------------------------------------------')
+          lines.push('')
+
+          filteredData.value.Models.forEach(model => {
+            lines.push(`    %% table name: ${model.TableName}`)
+            lines.push(`    %% table comment: ${model.TableComment}`)
+            lines.push(`    ${model.ModelName.replace(/:/g, '-')} {`)
+
+            if (!isHideColumns.value) {
+              model.Columns.forEach(column => {
+                lines.push(`        ${column.type} ${column.name} ${isShowKey.value ? column.key : ''} ${isShowComment.value ? `"${column.comment || ''}"` : ''}`)
+              })
+            }
+
+            lines.push(`    }`)
+            lines.push('')
+          });
+
+          filteredData.value.Relations.forEach(relation => {
+            if (isShowRelationComment.value) {
+              lines.push(`    ${relation.LeftModelName.replace(/:/g, '-')} ${relation.LeftValue}${relation.Line}${relation.RightValue} ${relation.RightModelName.replace(/:/g, '-')} : "${relation.Comment}"`)
+            } else {
+              lines.push(`    ${relation.LeftModelName.replace(/:/g, '-')} ${relation.LeftValue}${relation.Line}${relation.RightValue} ${relation.RightModelName.replace(/:/g, '-')} : ""`)
+            }
+          });
+
+          return lines.join("\n")
+        })
+
+        const filteredData = Vue.computed(() => {
+          let relations
+          if (isPreviewRelations.value) {
+            relations = schemaData.Relations.filter(relation => {
+              return selectModels.value.includes(relation.LeftModelName) || selectModels.value.includes(relation.RightModelName)
+            })
+          } else {
+            relations = schemaData.Relations.filter(relation => {
+              return selectModels.value.includes(relation.LeftModelName) && selectModels.value.includes(relation.RightModelName)
+            })
+          }
+
+          return {
+            Models: schemaData.Models.filter(model => selectModels.value.includes(model.ModelName)),
+            Relations: relations
+          }
+        })
+
+        const graph = Vue.ref()
+
+        const filterText = Vue.ref('')
+
+        // Mermaid initialise is non-trivial — it parses theme CSS and seeds an
+        // internal config. Doing it on every reRender (the previous behaviour)
+        // wasted work on schemas that re-render frequently. Init once here.
+        // `securityLevel: 'strict'` is also the Mermaid 10+ default, but pin it
+        // explicitly so a future upstream change can't silently regress to
+        // 'loose' (which would eval user-supplied labels as HTML).
+        mermaid.initialize({
+          theme: 'dark',
+          maxTextSize: 99999999,
+          startOnLoad: false,
+          securityLevel: 'strict',
+          flowchart: { htmlLabels: false },
+          er: { useMaxWidth: false }
+        })
+
+        // Convenience: do `selectModels.length === 0` once. The reRender
+        // short-circuit and the empty-state overlay (template line ~258) both
+        // gate on this, so any future change to "what counts as empty?" only
+        // needs to update one place.
+        const isEmptySelection = Vue.computed(() => filteredData.value.Models.length === 0)
+
+        // The set of refs that actually affect the rendered diagram, used to
+        // skip re-parsing Mermaid when nothing relevant changed.
+        const computeRenderKey = () => JSON.stringify([
+          [...selectModels.value].sort(),
+          isPreviewRelations.value,
+          isShowRelationComment.value,
+          isShowKey.value,
+          isShowComment.value,
+          isHideColumns.value
+        ])
+        let lastRenderKey = null
+
+        // Track the in-flight render so a late-completing render can't
+        // overwrite a more recent one when the user toggles options rapidly.
+        let renderToken = 0
+        const reRender = async () => {
+          const myToken = ++renderToken
+          const source = mermaidErd.value
+          const key = computeRenderKey()
+          const renderAffectingChanged = key !== lastRenderKey
+
+          // Empty selection short-circuits Mermaid (it would render a header-
+          // only diagram, but skipping the call avoids the parser cost on big
+          // schemas where the user just landed on an empty default view).
+          if (isEmptySelection.value) {
+            graph.value = ''
+            renderError.value = ''
+            lastRenderKey = key
+            const target = document.getElementById('preview')
+            if (target) target.innerHTML = ''
+            return
+          }
+
+          // Nothing that affects the diagram changed and we already have a
+          // successful render — skip the parser cost.
+          if (!renderAffectingChanged && graph.value) return
+
+          let svg
+          try {
+            const result = await mermaid.render('mermaid-erd', source)
+            svg = result.svg
+          } catch (err) {
+            // Deliberately do NOT update lastRenderKey on failure — otherwise
+            // the next attempt with the same selection would short-circuit
+            // and the user would be unable to retry without changing options.
+            console.error('mermaid_erd: failed to render diagram', err)
+            renderError.value = i18n[language.value]['errors']['render_failed']
+            return
+          }
+          if (myToken !== renderToken) return
+          graph.value = svg
+          renderError.value = ''
+          lastRenderKey = key
+          const target = document.getElementById('preview')
+          if (!target) return
+          target.innerHTML = svg
+        }
+
+        // Debounce reRender so rapid toggles (e.g. clicking "All", or scrubbing
+        // option checkboxes) don't issue back-to-back mermaid.render calls —
+        // each render is O(models × relations) in the parser.
+        let reRenderTimer = null
+        const RE_RENDER_DEBOUNCE_MS = 100
+        const scheduleReRender = () => {
+          if (reRenderTimer) clearTimeout(reRenderTimer)
+          reRenderTimer = setTimeout(() => {
+            reRenderTimer = null
+            reRender()
+          }, RE_RENDER_DEBOUNCE_MS)
+        }
+
+        const onCopyMermaid = () => clipboardWrite(mermaidErd.value, isCopiedMermaid)
+
+        const onCopyMarkdown = () => clipboardWrite(`\`\`\`mermaid\n${mermaidErd.value}\n\`\`\`\n`, isCopiedMarkdown)
+
+        // Surface download failures (empty selection, post-error state) via the
+        // same `renderError` banner the render path uses — silently producing a
+        // 0-byte file used to look like a broken Download button.
+        const failDownload = (reason, err) => {
+          if (err) console.error(`mermaid_erd: download failed (${reason})`, err)
+          else console.error(`mermaid_erd: download failed (${reason})`)
+          renderError.value = i18n[language.value]['errors']['download_failed']
+        }
+
+        // Encode UTF-8 text to base64 without the deprecated `unescape` pattern.
+        // Returns null on failure so callers can surface the error explicitly —
+        // a thrown btoa error inside an img.onload handler would hang the
+        // surrounding Promise forever.
+        const utf8ToBase64 = (str) => {
+          try {
+            const bytes = new TextEncoder().encode(str)
+            let binary = ''
+            for (let i = 0; i < bytes.length; i++) binary += String.fromCharCode(bytes[i])
+            return btoa(binary)
+          } catch (err) {
+            console.error('mermaid_erd: utf8ToBase64 failed', err)
+            return null
+          }
+        }
+
+        const onDownloadSvg = () => {
+          if (!graph.value) return failDownload('no rendered SVG to export')
+          try {
+            const svgBlob = new Blob([graph.value], { type: 'image/svg+xml;charset=utf-8' })
+            const svgUrl = URL.createObjectURL(svgBlob)
+            const a = document.createElement('a')
+            a.href = svgUrl
+            a.setAttribute('download', 'mermaid_erd.svg')
+            a.dispatchEvent(new MouseEvent('click'))
+            URL.revokeObjectURL(svgUrl)
+          } catch (err) {
+            failDownload('SVG export threw', err)
+          }
+        }
+
+        const onDownloadPng = () => {
+          const svg = document.querySelector('#preview > svg')
+          if (!svg) return failDownload('no rendered SVG to export')
+          let svgBase64, width, height
+          try {
+            const svgData = new XMLSerializer().serializeToString(svg)
+            svgBase64 = utf8ToBase64(svgData)
+            if (svgBase64 === null) return failDownload('SVG base64 encoding failed')
+            width = svg.width.baseVal.value
+            height = svg.height.baseVal.value
+            if (!width || !height) return failDownload('SVG has no dimensions')
+          } catch (err) {
+            return failDownload('PNG export setup threw', err)
+          }
+          const canvas = document.createElement('canvas')
+          canvas.width = width
+          canvas.height = height
+          const ctx = canvas.getContext('2d')
+          const image = new Image
+          image.onload = () => {
+            try {
+              ctx.drawImage(image, 0, 0)
+              const a = document.createElement('a')
+              a.href = canvas.toDataURL('image/png')
+              a.setAttribute('download', 'mermaid_erd.png')
+              a.dispatchEvent(new MouseEvent('click'))
+            } catch (err) {
+              failDownload('canvas operation threw', err)
+            }
+          }
+          image.onerror = () => failDownload('Image failed to load rasterised SVG')
+          image.src = 'data:image/svg+xml;charset=utf-8;base64,' + svgBase64
+        }
+
+        const filteredModelList = Vue.computed(() => {
+          return schemaData.Models.filter((model) => {
+            if (model.ModelName.toLowerCase().includes(filterText.value.toLowerCase())) {
+              return true
+            }
+            if (model.TableName.toLowerCase().includes(filterText.value.toLowerCase())) {
+              return true
+            }
+          })
+        })
+
+        const isExistsNoModelTable = Vue.computed(() => {
+          return filteredModelList.value.some((model) => !model.IsModelExist)
+        })
+
+        // Sidebar virtualisation.
+        //
+        // For schemas with hundreds of models the sidebar's v-for was creating a
+        // <label> + <input> + (sometimes) <svg> per row. The browser then paid
+        // layout cost for every row whether it was on screen or not. The fix is
+        // a windowed list: render only the rows currently inside the scroll
+        // viewport, plus a small buffer.
+        //
+        // Item height has to be a constant for the maths to work — bind
+        // .virtual-list-item below to `height: ${VIRTUAL_LIST_ITEM_HEIGHT_PX}px`
+        // and resist adding wrap/multi-line content.
+        const VIRTUAL_LIST_ITEM_HEIGHT_PX = 24
+        const VIRTUAL_LIST_BUFFER_ROWS = 8
+        const VIRTUAL_LIST_THRESHOLD = 80
+        const VIRTUAL_LIST_VIEWPORT_PX = 480
+        const virtualListContainer = Vue.ref(null)
+        const virtualListScrollTop = Vue.ref(0)
+        const virtualListClientHeight = Vue.ref(VIRTUAL_LIST_VIEWPORT_PX)
+
+        const isVirtualizingModels = Vue.computed(() => filteredModelList.value.length > VIRTUAL_LIST_THRESHOLD)
+
+        const virtualListVisibleRange = Vue.computed(() => {
+          const total = filteredModelList.value.length
+          if (!isVirtualizingModels.value) {
+            return { start: 0, end: total }
+          }
+          const viewport = virtualListClientHeight.value || VIRTUAL_LIST_VIEWPORT_PX
+          const visibleCount = Math.ceil(viewport / VIRTUAL_LIST_ITEM_HEIGHT_PX)
+          const start = Math.max(0, Math.floor(virtualListScrollTop.value / VIRTUAL_LIST_ITEM_HEIGHT_PX) - VIRTUAL_LIST_BUFFER_ROWS)
+          const end = Math.min(total, start + visibleCount + VIRTUAL_LIST_BUFFER_ROWS * 2)
+          return { start, end }
+        })
+
+        const virtualListVisibleModels = Vue.computed(() => {
+          const { start, end } = virtualListVisibleRange.value
+          return filteredModelList.value.slice(start, end)
+        })
+
+        const virtualListTopSpacerStyle = Vue.computed(() => {
+          if (!isVirtualizingModels.value) return { display: 'none' }
+          return { height: `${virtualListVisibleRange.value.start * VIRTUAL_LIST_ITEM_HEIGHT_PX}px` }
+        })
+
+        const virtualListBottomSpacerStyle = Vue.computed(() => {
+          if (!isVirtualizingModels.value) return { display: 'none' }
+          const total = filteredModelList.value.length
+          const trailing = total - virtualListVisibleRange.value.end
+          return { height: `${Math.max(0, trailing) * VIRTUAL_LIST_ITEM_HEIGHT_PX}px` }
+        })
+
+        const virtualListScroll = (e) => {
+          virtualListScrollTop.value = e.target.scrollTop
+          virtualListClientHeight.value = e.target.clientHeight
+        }
+
+        // Filtering shrinks the list — reset scroll so the window doesn't sit
+        // past the new end (which would render zero visible rows with a tall
+        // empty spacer above).
+        Vue.watch(filterText, () => {
+          virtualListScrollTop.value = 0
+          if (virtualListContainer.value) virtualListContainer.value.scrollTop = 0
+        })
+
+        const setLanguage = (l) => {
+          // Accept an exact locale key or a BCP-47 tag (e.g. "en-US", "zh-CN"),
+          // falling back to the base subtag and then to English.
+          const tag = (l || '').toLowerCase()
+          const base = tag.split('-')[0]
+          const chosen = window.i18n[tag] ? tag : window.i18n[base] ? base : 'en'
+          language.value = chosen
+          document.documentElement.lang = chosen
+        }
+
+        Vue.onMounted(() => {
+          setLanguage(window.navigator.language)
+          restoreFromHash()
+          reRender()
+          // After first render, any subsequent option/selection change is
+          // pushed through the hashchange path, which is debounced.
+
+          window.addEventListener('keydown', handleKeyDown)
+          window.addEventListener('keyup', handleKeyUp)
+          window.addEventListener('mousedown', handleMouseDown)
+          window.addEventListener('mousemove', handleMouseMove)
+          window.addEventListener('mouseup', handleMouseUp)
+          window.addEventListener('wheel', handleWheel, { passive: false })
+          window.addEventListener('touchstart', handleTouchStart, { passive: false })
+          window.addEventListener('touchmove', handleTouchMove, { passive: false })
+          window.addEventListener('touchend', handleTouchEnd)
+        })
+
+        Vue.onUnmounted(() => {
+          window.removeEventListener('keydown', handleKeyDown)
+          window.removeEventListener('keyup', handleKeyUp)
+          window.removeEventListener('mousedown', handleMouseDown)
+          window.removeEventListener('mousemove', handleMouseMove)
+          window.removeEventListener('mouseup', handleMouseUp)
+          window.removeEventListener('wheel', handleWheel)
+          window.removeEventListener('touchstart', handleTouchStart)
+          window.removeEventListener('touchmove', handleTouchMove)
+          window.removeEventListener('touchend', handleTouchEnd)
+        })
+
+        window.addEventListener('hashchange', () => {
+          restoreFromHash()
+          scheduleReRender()
+        }, false);
+
+        return {
+          filteredModelList,
+          filterText,
+          i18n: window.i18n,
+          isCopiedMarkdown,
+          isCopiedMermaid,
+          isCopiedUrl,
+          isExistsNoModelTable,
+          isPreviewRelations,
+          isShowRelationComment,
+          isShowComment,
+          isShowKey,
+          isEmptySelection,
+          renderError,
+          language,
+          mermaidErd,
+          onChange,
+          onCopyMarkdown,
+          onCopyMermaid,
+          onCopyUrl,
+          onDownloadPng,
+          onDownloadSvg,
+          onSelectAll,
+          onUnselectAll,
+          reset,
+          schemaData,
+          selectModels,
+          setLanguage,
+          tab,
+          updateHash,
+          isHideColumns,
+          zoomStyle,
+          zoomArea,
+          viewport,
+          zoomIn,
+          zoomOut,
+          resetView,
+          moveUp,
+          moveDown,
+          moveLeft,
+          moveRight,
+          isSpacePressed,
+          isDragging,
+          virtualListContainer,
+          virtualListScroll,
+          virtualListTopSpacerStyle,
+          virtualListBottomSpacerStyle,
+          virtualListVisibleModels,
+          isVirtualizingModels
+        }
+      }
+    }
+
+    Vue.createApp(App).mount('#app')
+  </script>
+</body>
+</html>
