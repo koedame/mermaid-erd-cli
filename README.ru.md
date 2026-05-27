@@ -25,7 +25,8 @@
 # Интерактивный HTML-просмотрщик (по умолчанию → erd/index.html)
 npx mermaid-erd-cli --db "postgres://user:pass@localhost:5432/mydb"
 npx mermaid-erd-cli --db ./dev.sqlite3
-npx mermaid-erd-cli --db ./dev.sqlite3 --serve        # раздавать по HTTP
+npx mermaid-erd-cli --db ./dev.sqlite3 --serve        # раздавать по HTTP (случайный порт)
+npx mermaid-erd-cli --db ./dev.sqlite3 --serve --port 5173   # раздавать на фиксированном порту
 
 # Дампы схемы — подключение к базе не требуется
 npx mermaid-erd-cli --schema ./db/schema.rb           # Rails schema.rb
@@ -62,6 +63,8 @@ npx mermaid-erd-cli --db ./dev.sqlite3 --format json | jq '.Models[].TableName'
 | `--format <html\|mermaid\|json>` | Формат вывода (`mmd` — псевдоним для `mermaid`) | `html` |
 | `--out <path>` | Путь вывода; `-` означает стандартный вывод | `erd/index.html` (html); стандартный вывод (mermaid/json) |
 | `--serve` | Отрендерить HTML и раздать по HTTP | выкл. |
+| `--port <number>` | Порт для прослушивания при `--serve` | случайный |
+| `--host <address>` | Адрес для привязки при `--serve`. `0.0.0.0` открывает полную схему на всех сетевых интерфейсах — используйте только в доверенных сетях | `127.0.0.1` |
 | `--ignore-tables <patterns>` | Регэкс-шаблоны для исключения (через запятую) | `^schema_migrations$,^ar_internal_metadata$` |
 | `--config <path>` | Путь к файлу конфигурации | `mermaid-erd.yml` |
 | `--title <name>` | Заголовок, показываемый в HTML-просмотрщике | `Database` |

@@ -25,7 +25,8 @@
 # 인터랙티브 HTML 뷰어 (기본값 → erd/index.html)
 npx mermaid-erd-cli --db "postgres://user:pass@localhost:5432/mydb"
 npx mermaid-erd-cli --db ./dev.sqlite3
-npx mermaid-erd-cli --db ./dev.sqlite3 --serve        # HTTP로 제공
+npx mermaid-erd-cli --db ./dev.sqlite3 --serve        # HTTP로 제공 (임의 포트)
+npx mermaid-erd-cli --db ./dev.sqlite3 --serve --port 5173   # 고정 포트로 제공
 
 # 스키마 덤프 — 데이터베이스 연결 불필요
 npx mermaid-erd-cli --schema ./db/schema.rb           # Rails schema.rb
@@ -62,6 +63,8 @@ npx mermaid-erd-cli --db ./dev.sqlite3 --format json | jq '.Models[].TableName'
 | `--format <html\|mermaid\|json>` | 출력 형식(`mmd`는 `mermaid`의 별칭) | `html` |
 | `--out <path>` | 출력 경로. `-`는 표준 출력 | `erd/index.html`(html) / 표준 출력(mermaid·json) |
 | `--serve` | HTML을 렌더링하여 HTTP로 제공 | 끔 |
+| `--port <number>` | `--serve` 에서 수신할 포트 | 임의 |
+| `--host <address>` | `--serve` 에서 바인딩할 주소. `0.0.0.0` 은 모든 네트워크 인터페이스에 전체 스키마를 노출합니다 — 신뢰할 수 있는 네트워크에서만 사용하세요 | `127.0.0.1` |
 | `--ignore-tables <patterns>` | 제외할 테이블의 정규식(쉼표 구분) | `^schema_migrations$,^ar_internal_metadata$` |
 | `--config <path>` | 설정 파일 경로 | `mermaid-erd.yml` |
 | `--title <name>` | HTML 뷰어에 표시할 제목 | `Database` |

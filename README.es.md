@@ -25,7 +25,8 @@ Las relaciones se derivan de las claves foráneas: la tabla referenciada es el l
 # Visor HTML interactivo (por defecto → erd/index.html)
 npx mermaid-erd-cli --db "postgres://user:pass@localhost:5432/mydb"
 npx mermaid-erd-cli --db ./dev.sqlite3
-npx mermaid-erd-cli --db ./dev.sqlite3 --serve        # servir por HTTP
+npx mermaid-erd-cli --db ./dev.sqlite3 --serve        # servir por HTTP (puerto aleatorio)
+npx mermaid-erd-cli --db ./dev.sqlite3 --serve --port 5173   # servir en un puerto fijo
 
 # Volcados de esquema — sin conexión a la base de datos
 npx mermaid-erd-cli --schema ./db/schema.rb           # Rails schema.rb
@@ -62,6 +63,8 @@ El análisis de volcados de esquema (`--schema`) no requiere ningún controlador
 | `--format <html\|mermaid\|json>` | Formato de salida (`mmd` es un alias de `mermaid`) | `html` |
 | `--out <path>` | Ruta de salida; `-` significa salida estándar | `erd/index.html` (html); salida estándar (mermaid/json) |
 | `--serve` | Renderizar el HTML y servirlo por HTTP | desactivado |
+| `--port <number>` | Puerto en el que escuchar con `--serve` | aleatorio |
+| `--host <address>` | Dirección a enlazar con `--serve`. `0.0.0.0` expone el esquema completo en todas las interfaces de red — úselo solo en redes de confianza | `127.0.0.1` |
 | `--ignore-tables <patterns>` | Patrones regex separados por comas para excluir | `^schema_migrations$,^ar_internal_metadata$` |
 | `--config <path>` | Ruta del archivo de configuración | `mermaid-erd.yml` |
 | `--title <name>` | Título mostrado en el visor HTML | `Database` |

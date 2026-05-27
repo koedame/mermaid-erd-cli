@@ -24,6 +24,10 @@ Output:
   --out <path>          output path; "-" means stdout
                         (default: erd/index.html for html, stdout for mermaid/json)
   --serve               render HTML and serve it over HTTP, printing the URL
+  --port <number>       port to listen on with --serve (default: random)
+  --host <address>      address to bind with --serve (default: 127.0.0.1).
+                        0.0.0.0 exposes the diagram — your full schema — on
+                        every network interface; use only on trusted networks
   --title <name>        title shown in the HTML viewer
 
 Filtering:
@@ -40,6 +44,8 @@ interface Options {
   out?: string;
   format: Format;
   serve: boolean;
+  port?: number;
+  host?: string;
   ignoreTables?: string;
   title?: string;
   config: string;
@@ -55,6 +61,8 @@ function parse(argv: string[]): Options | "help" {
       format: { type: "string", default: "html" },
       out: { type: "string" },
       serve: { type: "boolean", default: false },
+      port: { type: "string" },
+      host: { type: "string" },
       "ignore-tables": { type: "string" },
       title: { type: "string" },
       config: { type: "string", default: "mermaid-erd.yml" },
@@ -71,6 +79,18 @@ function parse(argv: string[]): Options | "help" {
     throw new Error(`unknown --format "${raw}" (expected html, mermaid, or json)`);
   }
 
+  const rawPort = values.port as string | undefined;
+  let port: number | undefined;
+  if (rawPort !== undefined) {
+    // Only a plain decimal integer is a port. Reject "", "0x50", "1e3", "3000.5"
+    // and similar so a shell mistake fails loudly instead of silently binding an
+    // unexpected port (Number() would coerce all of those to a valid-looking int).
+    if (!/^\d+$/.test(rawPort) || Number(rawPort) > 65535) {
+      throw new Error(`invalid --port "${rawPort}" (expected 0-65535)`);
+    }
+    port = Number(rawPort);
+  }
+
   return {
     db: values.db as string | undefined,
     schema: values.schema as string | undefined,
@@ -78,6 +98,8 @@ function parse(argv: string[]): Options | "help" {
     out: values.out as string | undefined,
     format,
     serve: values.serve as boolean,
+    port,
+    host: values.host as string | undefined,
     ignoreTables: values["ignore-tables"] as string | undefined,
     title: values.title as string | undefined,
     config: values.config as string,
@@ -104,8 +126,12 @@ async function run(options: Options): Promise<void> {
   if (options.serve) {
     const html = await renderHtml(data, { title: options.title });
     console.error(summary);
-    await serve(html); // stays pending until interrupted
+    await serve(html, { port: options.port, host: options.host }); // stays pending until interrupted
     return;
+  }
+
+  if (options.port !== undefined || options.host !== undefined) {
+    console.error("warning: --port and --host only take effect with --serve");
   }
 
   const content =
@@ -142,20 +168,59 @@ async function resolveIgnoreTables(options: Options): Promise<string[]> {
   return fromFile ?? DEFAULT_IGNORE_TABLES;
 }
 
-function serve(html: string): Promise<void> {
+// Addresses reachable only from this machine.
+const LOOPBACK_HOSTS = new Set(["127.0.0.1", "::1", "localhost"]);
+// Wildcard binds reach every interface but are still browsable via localhost.
+const WILDCARD_HOSTS = new Set(["0.0.0.0", "::"]);
+
+function serveUrl(host: string, port: number): string {
+  if (LOOPBACK_HOSTS.has(host) || WILDCARD_HOSTS.has(host)) return `http://localhost:${port}/`;
+  // IPv6 literals must be bracketed in a URL.
+  const authority = host.includes(":") ? `[${host}]` : host;
+  return `http://${authority}:${port}/`;
+}
+
+function listenError(err: NodeJS.ErrnoException, port: number, host: string): Error {
+  switch (err.code) {
+    case "EADDRINUSE":
+      // Only a user-requested port can collide; port 0 lets the OS pick a free one.
+      return port === 0 ? err : new Error(`port ${port} is already in use`);
+    case "EACCES":
+      return new Error(
+        `cannot bind to port ${port}: permission denied (ports below 1024 may need elevated privileges)`,
+      );
+    case "EADDRNOTAVAIL":
+      return new Error(`cannot bind to --host "${host}": address not available on this machine`);
+    case "ENOTFOUND":
+    case "EAI_AGAIN":
+      return new Error(`cannot resolve --host "${host}"`);
+    default:
+      return err;
+  }
+}
+
+function serve(html: string, opts: { port?: number; host?: string }): Promise<void> {
+  // Default to loopback so the diagram (which embeds the full schema) is not
+  // reachable off-machine unless the caller opts in with --host. Port 0 lets
+  // the OS assign a free one. The promise stays pending so the process keeps
+  // serving until interrupted.
+  const host = opts.host ?? "127.0.0.1";
+  const port = opts.port ?? 0;
   return new Promise((_resolve, reject) => {
     const server = createServer((_req, res) => {
       res.writeHead(200, { "Content-Type": "text/html; charset=utf-8" });
       res.end(html);
     });
-    server.on("error", reject);
-    // Bind to loopback only — matches the advertised localhost URL and avoids
-    // exposing the diagram on the LAN. The promise stays pending so the
-    // process keeps serving until interrupted.
-    server.listen(0, "127.0.0.1", () => {
+    server.on("error", (err: NodeJS.ErrnoException) => reject(listenError(err, port, host)));
+    server.listen(port, host, () => {
       const address = server.address();
-      const port = typeof address === "object" && address ? address.port : 0;
-      console.error(`Serving ERD at http://localhost:${port}/ (Ctrl-C to stop)`);
+      const boundPort = typeof address === "object" && address ? address.port : port;
+      if (!LOOPBACK_HOSTS.has(host)) {
+        console.error(
+          `warning: --host ${host} makes the diagram (your full schema) reachable from other machines on the network; use only on trusted networks.`,
+        );
+      }
+      console.error(`Serving ERD at ${serveUrl(host, boundPort)} (Ctrl-C to stop)`);
     });
   });
 }

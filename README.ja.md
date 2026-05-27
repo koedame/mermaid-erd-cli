@@ -25,7 +25,8 @@
 # インタラクティブな HTML ビューア（既定 → erd/index.html）
 npx mermaid-erd-cli --db "postgres://user:pass@localhost:5432/mydb"
 npx mermaid-erd-cli --db ./dev.sqlite3
-npx mermaid-erd-cli --db ./dev.sqlite3 --serve        # HTTP で配信
+npx mermaid-erd-cli --db ./dev.sqlite3 --serve        # HTTP で配信（ランダムポート）
+npx mermaid-erd-cli --db ./dev.sqlite3 --serve --port 5173   # 固定ポートで配信
 
 # スキーマダンプ（DB 接続不要）
 npx mermaid-erd-cli --schema ./db/schema.rb           # Rails schema.rb
@@ -62,6 +63,8 @@ npx mermaid-erd-cli --db ./dev.sqlite3 --format json | jq '.Models[].TableName'
 | `--format <html\|mermaid\|json>` | 出力フォーマット（`mmd` は `mermaid` のエイリアス） | `html` |
 | `--out <path>` | 出力先。`-` で標準出力 | `erd/index.html`（html）/ 標準出力（mermaid・json） |
 | `--serve` | HTML を生成し HTTP で配信 | off |
+| `--port <number>` | `--serve` で待ち受けるポート番号 | ランダム |
+| `--host <address>` | `--serve` でバインドするアドレス。`0.0.0.0` はすべてのネットワークインターフェースにスキーマ全体を公開します — 信頼できるネットワークでのみ使用してください | `127.0.0.1` |
 | `--ignore-tables <patterns>` | 除外するテーブルの正規表現（カンマ区切り） | `^schema_migrations$,^ar_internal_metadata$` |
 | `--config <path>` | 設定ファイルのパス | `mermaid-erd.yml` |
 | `--title <name>` | ビューアに表示するタイトル | `Database` |

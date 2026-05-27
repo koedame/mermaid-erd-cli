@@ -25,7 +25,8 @@ Les relations sont déduites des clés étrangères : la table référencée est
 # Visualiseur HTML interactif (par défaut → erd/index.html)
 npx mermaid-erd-cli --db "postgres://user:pass@localhost:5432/mydb"
 npx mermaid-erd-cli --db ./dev.sqlite3
-npx mermaid-erd-cli --db ./dev.sqlite3 --serve        # servir via HTTP
+npx mermaid-erd-cli --db ./dev.sqlite3 --serve        # servir via HTTP (port aléatoire)
+npx mermaid-erd-cli --db ./dev.sqlite3 --serve --port 5173   # servir sur un port fixe
 
 # Exports de schéma — aucune connexion à la base requise
 npx mermaid-erd-cli --schema ./db/schema.rb           # Rails schema.rb
@@ -62,6 +63,8 @@ L’analyse des exports de schéma (`--schema`) ne nécessite aucun pilote.
 | `--format <html\|mermaid\|json>` | Format de sortie (`mmd` est un alias de `mermaid`) | `html` |
 | `--out <path>` | Chemin de sortie ; `-` signifie sortie standard | `erd/index.html` (html) ; sortie standard (mermaid/json) |
 | `--serve` | Rendre le HTML et le servir via HTTP | désactivé |
+| `--port <number>` | Port d'écoute avec `--serve` | aléatoire |
+| `--host <address>` | Adresse à lier avec `--serve`. `0.0.0.0` expose l'intégralité du schéma sur toutes les interfaces réseau — à utiliser uniquement sur des réseaux de confiance | `127.0.0.1` |
 | `--ignore-tables <patterns>` | Motifs regex séparés par des virgules à exclure | `^schema_migrations$,^ar_internal_metadata$` |
 | `--config <path>` | Chemin du fichier de configuration | `mermaid-erd.yml` |
 | `--title <name>` | Titre affiché dans le visualiseur HTML | `Database` |
