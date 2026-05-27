@@ -46,7 +46,7 @@
   },
   "optionalDependencies": {
     "better-sqlite3": "^11.3.0",
-    "mysql2": "^3.11.0",
+    "mysql2": "^3.22.4",
     "pg": "^8.12.0"
   },
   "devDependencies": {
@@ -55,7 +55,7 @@
     "@types/node": "^22.5.0",
     "@types/pg": "^8.11.0",
     "better-sqlite3": "^11.3.0",
-    "mysql2": "^3.11.0",
+    "mysql2": "^3.22.4",
     "pg": "^8.12.0",
     "playwright": "^1.47.0",
     "tsx": "^4.19.0",
