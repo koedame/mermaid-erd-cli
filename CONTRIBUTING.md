@@ -47,4 +47,4 @@ bash scripts/verify-db.sh
 ## Pull requests
 
 Open PRs against `main`. CI runs the build, tests, and the e2e check across
-Node 18/20/22.
+Node 20/22.
