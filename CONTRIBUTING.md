@@ -61,3 +61,12 @@ publish step.
 3. Tag the released commit: `git tag vX.Y.Z && git push origin vX.Y.Z`.
 4. Create a GitHub release for the tag, using the `CHANGELOG.md` entry as the
    notes: `gh release create vX.Y.Z --title vX.Y.Z --notes "<changelog section>"`.
+5. Build and push the multi-arch Docker image to both registries. Log in first
+   (`docker login ghcr.io` and `docker login`), then:
+
+   ```bash
+   docker buildx build --platform linux/amd64,linux/arm64 \
+     -t ghcr.io/koedame/mermaid-erd-cli:X.Y.Z -t ghcr.io/koedame/mermaid-erd-cli:latest \
+     -t koedame/mermaid-erd-cli:X.Y.Z -t koedame/mermaid-erd-cli:latest \
+     --push .
+   ```

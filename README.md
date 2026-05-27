@@ -58,6 +58,61 @@ The driver for your database is loaded only when needed, so install just the one
 
 Schema-dump parsing (`--schema`) needs no driver at all.
 
+## Docker
+
+Prebuilt images are published for each release to GitHub Container Registry and
+Docker Hub. The runtime is a minimal, distroless image that bundles all three
+database drivers, so live introspection works without installing anything else.
+
+```bash
+docker pull ghcr.io/koedame/mermaid-erd-cli   # or: docker pull koedame/mermaid-erd-cli
+```
+
+The container works in `/work`; mount the directory you want to read from and
+write to there. The examples use the GHCR image — substitute
+`koedame/mermaid-erd-cli` for Docker Hub.
+
+```bash
+# Schema dump in the current directory -> erd/index.html beside it
+docker run --rm -u "$(id -u):$(id -g)" -v "$PWD:/work" \
+  ghcr.io/koedame/mermaid-erd-cli --schema schema.rb
+
+# Mermaid / JSON to stdout
+docker run --rm -v "$PWD:/work" ghcr.io/koedame/mermaid-erd-cli --schema dump.sql --format mermaid
+
+# Live SQLite file
+docker run --rm -v "$PWD:/work" ghcr.io/koedame/mermaid-erd-cli --db /work/dev.sqlite3 --format mermaid
+```
+
+The image runs as a non-root user, so add `-u "$(id -u):$(id -g)"` when it
+writes to a host directory you own (as in the first example); stdout-only
+commands don't need it.
+
+To reach a database running on the host, remember that `localhost` inside the
+container is the container itself. Use `host.docker.internal` (Docker Desktop)
+or `--network host` (Linux):
+
+```bash
+docker run --rm --network host ghcr.io/koedame/mermaid-erd-cli \
+  --db "postgres://user:pass@localhost:5432/mydb" --format mermaid
+```
+
+To serve the viewer, bind to `0.0.0.0` inside the container and publish the
+port — it stays reachable only through the port you publish:
+
+```bash
+docker run --rm -p 8080:8080 -v "$PWD:/work" ghcr.io/koedame/mermaid-erd-cli \
+  --db /work/dev.sqlite3 --serve --host 0.0.0.0 --port 8080
+# then open http://localhost:8080
+```
+
+To build the image yourself instead of pulling it:
+
+```bash
+docker build -t mermaid-erd-cli .
+docker run --rm -v "$PWD:/work" mermaid-erd-cli --schema schema.rb
+```
+
 ## Options
 
 | Option | Description | Default |

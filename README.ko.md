@@ -53,6 +53,62 @@ npx mermaid-erd-cli --db ./dev.sqlite3 --format json | jq '.Models[].TableName'
 
 스키마 덤프 파싱(`--schema`)은 드라이버가 전혀 필요 없습니다.
 
+## Docker
+
+사전 빌드된 이미지는 각 릴리스마다 GitHub Container Registry와
+Docker Hub에 게시됩니다. 런타임은 최소한의 distroless 이미지로, 세 가지
+데이터베이스 드라이버가 모두 포함되어 있어 라이브 introspection도
+추가 설치 없이 동작합니다.
+
+```bash
+docker pull ghcr.io/koedame/mermaid-erd-cli   # 또는: docker pull koedame/mermaid-erd-cli
+```
+
+컨테이너의 작업 디렉터리는 `/work`입니다. 읽고 쓸 디렉터리를 여기에 마운트하세요.
+아래 예시는 GHCR 이미지를 사용합니다. Docker Hub를 사용하려면
+`ghcr.io/koedame/mermaid-erd-cli`를 `koedame/mermaid-erd-cli`로 바꾸세요.
+
+```bash
+# 현재 디렉터리의 스키마 덤프 -> 같은 위치에 erd/index.html 생성
+docker run --rm -u "$(id -u):$(id -g)" -v "$PWD:/work" \
+  ghcr.io/koedame/mermaid-erd-cli --schema schema.rb
+
+# Mermaid / JSON을 표준 출력으로
+docker run --rm -v "$PWD:/work" ghcr.io/koedame/mermaid-erd-cli --schema dump.sql --format mermaid
+
+# 라이브 SQLite 파일
+docker run --rm -v "$PWD:/work" ghcr.io/koedame/mermaid-erd-cli --db /work/dev.sqlite3 --format mermaid
+```
+
+이미지는 비 root 사용자로 실행됩니다. 소유한 호스트 디렉터리에 쓸 때는
+(첫 번째 예시처럼) `-u "$(id -u):$(id -g)"`를 추가하세요. 표준 출력만 사용하는
+명령에는 필요하지 않습니다.
+
+호스트에서 실행 중인 데이터베이스에 연결할 때는, 컨테이너 내부의 `localhost`가
+컨테이너 자신을 가리킨다는 점에 유의하세요. `host.docker.internal`(Docker Desktop)
+또는 `--network host`(Linux)를 사용합니다.
+
+```bash
+docker run --rm --network host ghcr.io/koedame/mermaid-erd-cli \
+  --db "postgres://user:pass@localhost:5432/mydb" --format mermaid
+```
+
+뷰어를 제공할 때는 컨테이너 내부에서 `0.0.0.0`에 바인딩하고 포트를 게시합니다.
+게시한 포트를 통해서만 접근할 수 있습니다.
+
+```bash
+docker run --rm -p 8080:8080 -v "$PWD:/work" ghcr.io/koedame/mermaid-erd-cli \
+  --db /work/dev.sqlite3 --serve --host 0.0.0.0 --port 8080
+# 그런 다음 http://localhost:8080 을 엽니다
+```
+
+이미지를 직접 빌드하려면:
+
+```bash
+docker build -t mermaid-erd-cli .
+docker run --rm -v "$PWD:/work" mermaid-erd-cli --schema schema.rb
+```
+
 ## 옵션
 
 | 옵션 | 설명 | 기본값 |
