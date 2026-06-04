@@ -45,7 +45,7 @@
     "url": "https://github.com/koedame/mermaid-erd-cli/issues"
   },
   "optionalDependencies": {
-    "better-sqlite3": "^11.3.0",
+    "better-sqlite3": "^12.10.0",
     "mysql2": "^3.22.4",
     "pg": "^8.12.0"
   },
