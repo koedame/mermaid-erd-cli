@@ -30,7 +30,6 @@ COPY --from=build /app/dist /app/dist
 COPY --from=build /app/LICENSE /app/LICENSE
 COPY --from=build /app/assets /app/assets
 COPY --from=build /app/package.json /app/package.json
-COPY LICENSE /app/LICENSE
 LABEL org.opencontainers.image.licenses="MIT" \
       org.opencontainers.image.source="https://github.com/koedame/mermaid-erd-cli"
 ENTRYPOINT ["/nodejs/bin/node", "/app/dist/cli.js"]
