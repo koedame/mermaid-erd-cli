@@ -46,6 +46,8 @@ npx mermaid-erd-cli --db ./dev.sqlite3 --format json | jq '.Models[].TableName'
 
 Use `--out -` to force any format (including HTML) to stdout.
 
+The generated HTML, and the output of `--format json` and `--format mermaid`, contains your database schema: table and column names and types, comments, and relationships. Share or host it only as widely as you would share the schema itself.
+
 ### Supported databases
 
 The driver for your database is loaded only when needed, so install just the one you use:
@@ -158,3 +160,7 @@ their own MIT licenses; see [`assets/vendor/LICENSES.md`](./assets/vendor/LICENS
 ## License
 
 MIT — see [LICENSE](./LICENSE).
+
+## Trademarks
+
+This project is not affiliated with, endorsed by, or sponsored by the Mermaid project or Mermaid Chart Inc. Mermaid Chart Inc. has registered or applied for the trademarks MERMAID CHART and MERMAID in the United States. PostgreSQL, MySQL, SQLite, Docker, and all other trademarks are the property of their respective owners.

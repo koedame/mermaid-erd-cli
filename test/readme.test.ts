@@ -49,4 +49,25 @@ describe("localized READMEs", () => {
       expect(read(f), f).toContain("https://koedame.github.io/mermaid-erd-cli/");
     }
   });
+
+  it("carries the trademark notice naming the database vendors in every README", () => {
+    for (const f of files) {
+      const notice = read(f)
+        .split("\n")
+        .find((line) => line.includes("MERMAID CHART"));
+      expect(notice, f).toBeDefined();
+      expect(notice, f).toContain("Mermaid Chart Inc.");
+      for (const name of ["PostgreSQL", "MySQL", "SQLite", "Docker"])
+        expect(notice, `${f}: ${name}`).toContain(name);
+    }
+  });
+
+  it("warns in every README that the generated HTML, JSON and Mermaid output contain the schema", () => {
+    for (const f of files) {
+      const warning = read(f)
+        .split("\n")
+        .find((line) => line.includes("`--format json`") && line.includes("`--format mermaid`"));
+      expect(warning, f).toBeDefined();
+    }
+  });
 });

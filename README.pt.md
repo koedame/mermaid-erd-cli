@@ -41,6 +41,8 @@ npx mermaid-erd-cli --db ./dev.sqlite3 --format json | jq '.Models[].TableName'
 
 Use `--out -` para forçar qualquer formato (inclusive HTML) para a saída padrão.
 
+O HTML gerado e a saída de `--format json` e `--format mermaid` contêm o esquema do seu banco de dados: nomes e tipos de tabelas e colunas, comentários e relacionamentos. Compartilhe-os ou hospede-os apenas com o mesmo alcance com que compartilharia o próprio esquema.
+
 ### Bancos de dados suportados
 
 O driver do seu banco só é carregado quando necessário, então instale apenas o que você usa:
@@ -150,3 +152,7 @@ O visualizador HTML e as bibliotecas de frontend incluídas derivam de [rails-me
 ## Licença
 
 MIT — consulte [LICENSE](./LICENSE).
+
+## Marcas registradas
+
+Este projeto não é afiliado ao projeto Mermaid nem à Mermaid Chart Inc., e não é endossado nem patrocinado por eles. A Mermaid Chart Inc. registrou ou solicitou o registro das marcas MERMAID CHART e MERMAID nos Estados Unidos. PostgreSQL, MySQL, SQLite, Docker e as demais marcas pertencem aos seus respectivos proprietários.
