@@ -27,6 +27,7 @@ FROM gcr.io/distroless/nodejs22-debian12:nonroot
 WORKDIR /work
 COPY --from=build /app/node_modules /app/node_modules
 COPY --from=build /app/dist /app/dist
+COPY LICENSE /app/LICENSE
 COPY --from=build /app/assets /app/assets
 COPY --from=build /app/package.json /app/package.json
 LABEL org.opencontainers.image.licenses="MIT" \
