@@ -152,8 +152,10 @@ The HTML viewer and the vendored front-end libraries are derived from
 [rails-mermaid_erd](https://github.com/koedame/rails-mermaid_erd) (MIT). This
 project keeps the same viewer and `SCHEMA_DATA` contract, replacing the
 Rails/ActiveRecord extraction with direct database introspection and schema-dump
-parsing. The bundled Mermaid, Vue, and Tailwind builds are redistributed under
-their own MIT licenses; see [`assets/vendor/LICENSES.md`](./assets/vendor/LICENSES.md).
+parsing. The bundled Mermaid and Vue builds and the stylesheet built with Tailwind CSS are
+redistributed under their own licenses (MIT, ISC, BSD-3-Clause, Apache-2.0 and a few
+others). Their copyright notices and license texts are in [`assets/vendor/LICENSES.md`](./assets/vendor/LICENSES.md)
+and at the top of every generated HTML file.
 
 ## License
 

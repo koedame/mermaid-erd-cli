@@ -1,0 +1,13 @@
+{
+  "name": "mermaid-erd-cli-tailwind",
+  "private": true,
+  "description": "Builds assets/vendor/tailwind.css. Not shipped in the npm package.",
+  "scripts": {
+    "build": "tailwindcss -c tailwind.config.js -i input.css -o ../../assets/vendor/tailwind.css --minify"
+  },
+  "devDependencies": {
+    "@tailwindcss/forms": "0.5.2",
+    "@tailwindcss/typography": "0.5.4",
+    "tailwindcss": "3.1.8"
+  }
+}

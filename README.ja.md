@@ -145,7 +145,7 @@ npm run e2e        # 生成したビューアのヘッドレスブラウザ検�
 
 ## 謝辞
 
-HTML ビューアと同梱フロントエンドライブラリは [rails-mermaid_erd](https://github.com/koedame/rails-mermaid_erd)（MIT）から派生しています。ビューアと `SCHEMA_DATA` の契約はそのまま流用し、Rails/ActiveRecord による抽出を DB 直接内省とスキーマダンプ解析に置き換えました。同梱の Mermaid・Vue・Tailwind は各 MIT ライセンスで再配布しています（[`assets/vendor/LICENSES.md`](./assets/vendor/LICENSES.md)）。
+HTML ビューアと同梱フロントエンドライブラリは [rails-mermaid_erd](https://github.com/koedame/rails-mermaid_erd)（MIT）から派生しています。ビューアと `SCHEMA_DATA` の契約はそのまま流用し、Rails/ActiveRecord による抽出を DB 直接内省とスキーマダンプ解析に置き換えました。同梱の Mermaid・Vue と、Tailwind CSS で生成したスタイルシートは、各ライセンス（MIT・ISC・BSD-3-Clause・Apache-2.0 ほか）で再配布しています。著作権表示とライセンス本文は [`assets/vendor/LICENSES.md`](./assets/vendor/LICENSES.md) と、生成する HTML ファイルの先頭にあります。
 
 ## ライセンス
 
