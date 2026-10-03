@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import { mkdir, writeFile } from "node:fs/promises";
 import { createServer } from "node:http";
+import { isIP } from "node:net";
 import { dirname, resolve } from "node:path";
 import { parseArgs } from "node:util";
 import { buildSchemaData } from "./build.js";
@@ -180,6 +181,24 @@ function serveUrl(host: string, port: number): string {
   return `http://${authority}:${port}/`;
 }
 
+// A DNS-rebinding page reaches this server under its own domain name, so the
+// Host header is what gives it away. Accept loopback names, the address we
+// were told to bind, and — only when bound to every interface — any IP literal
+// (that is how another machine or a published Docker port reaches us).
+function isAllowedHost(header: string | undefined, bound: string): boolean {
+  if (!header) return false;
+  let hostname: string;
+  try {
+    hostname = new URL(`http://${header}`).hostname;
+  } catch {
+    return false;
+  }
+  const bare = (h: string) => h.replace(/^\[|\]$/g, "").toLowerCase();
+  const name = bare(hostname);
+  if (LOOPBACK_HOSTS.has(name) || name === bare(bound)) return true;
+  return WILDCARD_HOSTS.has(bound) && isIP(name) !== 0;
+}
+
 function listenError(err: NodeJS.ErrnoException, port: number, host: string): Error {
   switch (err.code) {
     case "EADDRINUSE":
@@ -207,8 +226,16 @@ function serve(html: string, opts: { port?: number; host?: string }): Promise<vo
   const host = opts.host ?? "127.0.0.1";
   const port = opts.port ?? 0;
   return new Promise((_resolve, reject) => {
-    const server = createServer((_req, res) => {
-      res.writeHead(200, { "Content-Type": "text/html; charset=utf-8" });
+    const server = createServer((req, res) => {
+      if (!isAllowedHost(req.headers.host, host)) {
+        res.writeHead(403, { "Content-Type": "text/plain; charset=utf-8" });
+        res.end("Forbidden: unexpected Host header. Open the URL printed by mermaid-erd-cli.\n");
+        return;
+      }
+      res.writeHead(200, {
+        "Content-Type": "text/html; charset=utf-8",
+        "X-Content-Type-Options": "nosniff",
+      });
       res.end(html);
     });
     server.on("error", (err: NodeJS.ErrnoException) => reject(listenError(err, port, host)));

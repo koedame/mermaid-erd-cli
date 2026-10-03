@@ -6,7 +6,7 @@
 export async function requireDriver<T>(pkg: string, label: string): Promise<T> {
   try {
     return (await import(/* @vite-ignore */ pkg)) as T;
-  } catch (err) {
+  } catch {
     throw new Error(
       `${label} support needs the "${pkg}" package. Install it with:\n` + `  npm install ${pkg}`,
     );

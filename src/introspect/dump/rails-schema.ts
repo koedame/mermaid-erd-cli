@@ -1,4 +1,4 @@
-import type { Introspector, RawColumn, RawForeignKey, RawSchema, RawTable } from "../../types.js";
+import type { Introspector, RawColumn, RawSchema, RawTable } from "../../types.js";
 
 /**
  * Parses a Rails `db/schema.rb`. Handles `create_table` blocks (implicit `id`
