@@ -41,6 +41,8 @@ npx mermaid-erd-cli --db ./dev.sqlite3 --format json | jq '.Models[].TableName'
 
 `--out -`를 사용하면 모든 형식(HTML 포함)을 표준 출력으로 보낼 수 있습니다.
 
+생성된 HTML과 `--format json`, `--format mermaid`의 출력에는 테이블 및 컬럼 이름, 타입, 코멘트, 관계를 포함한 데이터베이스 스키마가 그대로 들어 있습니다. 스키마 자체를 공유해도 되는 범위에서만 공유하거나 호스팅하세요.
+
 ### 지원 데이터베이스
 
 데이터베이스 드라이버는 필요할 때만 로드되므로, 사용하는 것 하나만 설치하면 됩니다.
@@ -149,3 +151,7 @@ HTML 뷰어와 내장 프런트엔드 라이브러리는 [rails-mermaid_erd](htt
 ## 라이선스
 
 MIT — [LICENSE](./LICENSE)를 참조하세요.
+
+## 상표
+
+이 프로젝트는 Mermaid 프로젝트, Mermaid Chart Inc.와 제휴 관계가 없으며, 이들의 승인이나 후원을 받지 않았습니다. Mermaid Chart Inc.는 미국에서 MERMAID CHART와 MERMAID 상표를 등록했거나 출원했습니다. PostgreSQL, MySQL, SQLite, Docker 및 그 밖의 상표는 각 권리자의 자산입니다.
