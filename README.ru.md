@@ -147,7 +147,7 @@ npm run e2e        # проверка сгенерированного прос�
 
 ## Благодарности
 
-HTML-просмотрщик и встроенные фронтенд-библиотеки происходят от [rails-mermaid_erd](https://github.com/koedame/rails-mermaid_erd) (MIT). Этот проект сохраняет тот же просмотрщик и контракт `SCHEMA_DATA`, заменяя извлечение через Rails/ActiveRecord прямым исследованием базы данных и разбором дампов схемы. Встроенные сборки Mermaid, Vue и Tailwind распространяются под их собственными лицензиями MIT; см. [`assets/vendor/LICENSES.md`](./assets/vendor/LICENSES.md).
+HTML-просмотрщик и встроенные фронтенд-библиотеки происходят от [rails-mermaid_erd](https://github.com/koedame/rails-mermaid_erd) (MIT). Этот проект сохраняет тот же просмотрщик и контракт `SCHEMA_DATA`, заменяя извлечение через Rails/ActiveRecord прямым исследованием базы данных и разбором дампов схемы. Встроенные сборки Mermaid и Vue, а также таблица стилей, созданная с помощью Tailwind CSS, распространяются под их собственными лицензиями (MIT, ISC, BSD-3-Clause, Apache-2.0 и некоторые другие). Уведомления об авторских правах и тексты лицензий находятся в [`assets/vendor/LICENSES.md`](./assets/vendor/LICENSES.md) и в начале каждого создаваемого HTML-файла.
 
 ## Лицензия
 

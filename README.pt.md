@@ -147,7 +147,7 @@ npm run e2e        # verificação do visualizador gerado em navegador headless
 
 ## Agradecimentos
 
-O visualizador HTML e as bibliotecas de frontend incluídas derivam de [rails-mermaid_erd](https://github.com/koedame/rails-mermaid_erd) (MIT). Este projeto mantém o mesmo visualizador e o contrato `SCHEMA_DATA`, substituindo a extração do Rails/ActiveRecord pela inspeção direta do banco de dados e pela análise de dumps de esquema. As builds incluídas de Mermaid, Vue e Tailwind são redistribuídas sob suas próprias licenças MIT; consulte [`assets/vendor/LICENSES.md`](./assets/vendor/LICENSES.md).
+O visualizador HTML e as bibliotecas de frontend incluídas derivam de [rails-mermaid_erd](https://github.com/koedame/rails-mermaid_erd) (MIT). Este projeto mantém o mesmo visualizador e o contrato `SCHEMA_DATA`, substituindo a extração do Rails/ActiveRecord pela inspeção direta do banco de dados e pela análise de dumps de esquema. As builds incluídas de Mermaid e Vue e a folha de estilos gerada com Tailwind CSS são redistribuídas sob suas próprias licenças (MIT, ISC, BSD-3-Clause, Apache-2.0 e algumas outras). Seus avisos de copyright e textos de licença estão em [`assets/vendor/LICENSES.md`](./assets/vendor/LICENSES.md) e no início de cada arquivo HTML gerado.
 
 ## Licença
 

@@ -44,6 +44,37 @@ bash scripts/verify-db.sh
   the acknowledgements in the README before changing it.
 - Add tests for new behavior. Test names should describe the scenario.
 
+## Vendored front-end files
+
+`assets/vendor/` holds the files inlined into every generated HTML: the Mermaid
+and Vue bundles (downloaded as they are published) and `tailwind.css`. The
+stylesheet is not downloaded; it is built from the viewer's markup with the
+Tailwind CSS command-line tool (3.1.8, with the forms and typography plugins).
+Inputs are in `scripts/tailwind/`.
+
+After changing a class in `assets/template.html`, or a pinned version:
+
+```bash
+cd scripts/tailwind && npm ci && npm run build   # writes assets/vendor/tailwind.css
+```
+
+A class is found only when it appears in the template as a complete string; one
+assembled at runtime (`'bg-' + color`) is not.
+
+`assets/vendor/LICENSES.md` carries the copyright notice and license text of
+everything inside those files and is copied into the head of every generated
+HTML. It is generated, not written by hand. Rebuild it, and update
+`CHECKSUMS.txt`, after replacing a file or changing the icons in the template:
+
+```bash
+cd assets/vendor && sha256sum mermaid.min.js tailwind.css vue.global.prod.min.js   # then edit CHECKSUMS.txt
+cd ../.. && node scripts/licenses/generate.mjs     # needs network
+```
+
+The script stops on a GPL-family license, and `test/vendor.test.ts` fails when
+`LICENSES.md`, `CHECKSUMS.txt` and the files disagree. Then regenerate the demo
+with `npm run build && npm run demo`.
+
 ## Pull requests
 
 Open PRs against `main`. CI runs the build, tests, and the e2e check across

@@ -143,7 +143,7 @@ npm run e2e        # 对生成的查看器进行无头浏览器检查
 
 ## 致谢
 
-HTML 查看器及内置的前端库派生自 [rails-mermaid_erd](https://github.com/koedame/rails-mermaid_erd)(MIT)。本项目沿用了相同的查看器与 `SCHEMA_DATA` 约定,将 Rails/ActiveRecord 的抽取替换为直接的数据库内省与模式转储解析。内置的 Mermaid、Vue 和 Tailwind 构建按各自的 MIT 许可证再分发;参见 [`assets/vendor/LICENSES.md`](./assets/vendor/LICENSES.md)。
+HTML 查看器及内置的前端库派生自 [rails-mermaid_erd](https://github.com/koedame/rails-mermaid_erd)(MIT)。本项目沿用了相同的查看器与 `SCHEMA_DATA` 约定,将 Rails/ActiveRecord 的抽取替换为直接的数据库内省与模式转储解析。内置的 Mermaid、Vue 构建以及用 Tailwind CSS 生成的样式表按各自的许可证再分发(MIT、ISC、BSD-3-Clause、Apache-2.0 等)。版权声明和许可证全文见 [`assets/vendor/LICENSES.md`](./assets/vendor/LICENSES.md),也在每个生成的 HTML 文件的开头。
 
 ## 许可证
 

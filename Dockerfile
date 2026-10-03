@@ -10,7 +10,7 @@ RUN apt-get update \
     && rm -rf /var/lib/apt/lists/*
 COPY package.json package-lock.json ./
 RUN npm ci
-COPY tsconfig.json ./
+COPY tsconfig.json LICENSE ./
 COPY src ./src
 COPY assets ./assets
 # Compile, then drop devDependencies. The database drivers are
@@ -19,13 +19,15 @@ RUN npm run build \
     && npm prune --omit=dev
 
 # Runtime stage: a distroless image (no shell or package manager) running as
-# nonroot. It ships only dist/, assets/, and the pruned node_modules (the three
-# database drivers). better-sqlite3's native addon was compiled against the same
-# Debian/glibc and Node 22 ABI as this base, so it loads here without a toolchain.
+# nonroot. It ships only dist/, assets/, LICENSE (the generated viewer embeds
+# it), and the pruned node_modules (the three database drivers). better-sqlite3's
+# native addon was compiled against the same Debian/glibc and Node 22 ABI as this
+# base, so it loads here without a toolchain.
 FROM gcr.io/distroless/nodejs22-debian12:nonroot
 WORKDIR /work
 COPY --from=build /app/node_modules /app/node_modules
 COPY --from=build /app/dist /app/dist
+COPY --from=build /app/LICENSE /app/LICENSE
 COPY --from=build /app/assets /app/assets
 COPY --from=build /app/package.json /app/package.json
 COPY LICENSE /app/LICENSE

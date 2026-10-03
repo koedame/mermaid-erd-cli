@@ -146,7 +146,7 @@ npm run e2e        # comprobación del visor generado en un navegador headless
 
 ## Agradecimientos
 
-El visor HTML y las bibliotecas de frontend incluidas derivan de [rails-mermaid_erd](https://github.com/koedame/rails-mermaid_erd) (MIT). Este proyecto conserva el mismo visor y el contrato `SCHEMA_DATA`, sustituyendo la extracción de Rails/ActiveRecord por la inspección directa de la base de datos y el análisis de volcados de esquema. Las versiones incluidas de Mermaid, Vue y Tailwind se redistribuyen bajo sus propias licencias MIT; consulta [`assets/vendor/LICENSES.md`](./assets/vendor/LICENSES.md).
+El visor HTML y las bibliotecas de frontend incluidas derivan de [rails-mermaid_erd](https://github.com/koedame/rails-mermaid_erd) (MIT). Este proyecto conserva el mismo visor y el contrato `SCHEMA_DATA`, sustituyendo la extracción de Rails/ActiveRecord por la inspección directa de la base de datos y el análisis de volcados de esquema. Las versiones incluidas de Mermaid y Vue y la hoja de estilos generada con Tailwind CSS se redistribuyen bajo sus propias licencias (MIT, ISC, BSD-3-Clause, Apache-2.0 y algunas más). Sus avisos de copyright y los textos de licencia están en [`assets/vendor/LICENSES.md`](./assets/vendor/LICENSES.md) y al principio de cada archivo HTML generado.
 
 ## Licencia
 

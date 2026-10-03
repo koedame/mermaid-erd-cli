@@ -146,7 +146,7 @@ npm run e2e        # 생성된 뷰어의 헤드리스 브라우저 검사
 
 ## 감사의 글
 
-HTML 뷰어와 내장 프런트엔드 라이브러리는 [rails-mermaid_erd](https://github.com/koedame/rails-mermaid_erd)(MIT)에서 파생되었습니다. 이 프로젝트는 동일한 뷰어와 `SCHEMA_DATA` 계약을 유지하면서, Rails/ActiveRecord 기반 추출을 직접적인 데이터베이스 내성과 스키마 덤프 파싱으로 대체했습니다. 내장된 Mermaid, Vue, Tailwind 빌드는 각자의 MIT 라이선스로 재배포됩니다. [`assets/vendor/LICENSES.md`](./assets/vendor/LICENSES.md)를 참조하세요.
+HTML 뷰어와 내장 프런트엔드 라이브러리는 [rails-mermaid_erd](https://github.com/koedame/rails-mermaid_erd)(MIT)에서 파생되었습니다. 이 프로젝트는 동일한 뷰어와 `SCHEMA_DATA` 계약을 유지하면서, Rails/ActiveRecord 기반 추출을 직접적인 데이터베이스 내성과 스키마 덤프 파싱으로 대체했습니다. 내장된 Mermaid와 Vue 빌드, 그리고 Tailwind CSS로 생성한 스타일시트는 각자의 라이선스(MIT, ISC, BSD-3-Clause, Apache-2.0 등)로 재배포됩니다. 저작권 표시와 라이선스 본문은 [`assets/vendor/LICENSES.md`](./assets/vendor/LICENSES.md)와 생성되는 모든 HTML 파일의 맨 앞에 있습니다.
 
 ## 라이선스
 
