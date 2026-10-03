@@ -10,7 +10,7 @@ RUN apt-get update \
     && rm -rf /var/lib/apt/lists/*
 COPY package.json package-lock.json ./
 RUN npm ci
-COPY tsconfig.json LICENSE ./
+COPY tsconfig.json ./
 COPY src ./src
 COPY assets ./assets
 # Compile, then drop devDependencies. The database drivers are
@@ -27,7 +27,6 @@ FROM gcr.io/distroless/nodejs22-debian12:nonroot
 WORKDIR /work
 COPY --from=build /app/node_modules /app/node_modules
 COPY --from=build /app/dist /app/dist
-COPY --from=build /app/LICENSE /app/LICENSE
 COPY --from=build /app/assets /app/assets
 COPY --from=build /app/package.json /app/package.json
 COPY LICENSE /app/LICENSE
