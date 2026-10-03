@@ -2,7 +2,7 @@ import { type ChildProcess, execFile, spawn } from "node:child_process";
 import { existsSync, mkdtempSync, rmSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 import { get } from "node:http";
-import { createServer } from "node:net";
+import { connect, createServer } from "node:net";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -78,15 +78,33 @@ function stopServe(child: ChildProcess): Promise<void> {
   });
 }
 
-function httpGet(port: number): Promise<{ body: string; contentType?: string }> {
+function httpGet(
+  port: number,
+  hostHeader?: string,
+): Promise<{ status?: number; body: string; contentType?: string; nosniff?: string }> {
   return new Promise((resolve, reject) => {
-    get({ host: "127.0.0.1", port, path: "/" }, (res) => {
-      let body = "";
-      res.on("data", (chunk) => {
-        body += chunk;
-      });
-      res.on("end", () => resolve({ body, contentType: res.headers["content-type"] }));
-    }).on("error", reject);
+    get(
+      {
+        host: "127.0.0.1",
+        port,
+        path: "/",
+        headers: hostHeader === undefined ? undefined : { Host: hostHeader },
+      },
+      (res) => {
+        let body = "";
+        res.on("data", (chunk) => {
+          body += chunk;
+        });
+        res.on("end", () =>
+          resolve({
+            status: res.statusCode,
+            body,
+            contentType: res.headers["content-type"],
+            nosniff: res.headers["x-content-type-options"],
+          }),
+        );
+      },
+    ).on("error", reject);
   });
 }
 
@@ -188,6 +206,96 @@ describe("CLI --serve", () => {
       expect(stderr).toContain(`http://localhost:${port}/`);
       const { body } = await httpGet(port);
       expect(body).toContain("window.SCHEMA_DATA=");
+    } finally {
+      await stopServe(child);
+    }
+  }, 20_000);
+
+  it("serves with X-Content-Type-Options: nosniff", async () => {
+    const { port, child } = await spawnServe(["--db", dbPath, "--serve"]);
+    try {
+      expect((await httpGet(port)).nosniff).toBe("nosniff");
+    } finally {
+      await stopServe(child);
+    }
+  }, 20_000);
+
+  it.each([
+    ["localhost", (p: number) => `localhost:${p}`],
+    ["127.0.0.1", (p: number) => `127.0.0.1:${p}`],
+    ["[::1]", (p: number) => `[::1]:${p}`],
+    ["localhost without a port", () => "localhost"],
+  ])(
+    "answers 200 to a Host of %s",
+    async (_name, hostFor) => {
+      const { port, child } = await spawnServe(["--db", dbPath, "--serve"]);
+      try {
+        const res = await httpGet(port, hostFor(port));
+        expect(res.status).toBe(200);
+        expect(res.body).toContain("window.SCHEMA_DATA=");
+      } finally {
+        await stopServe(child);
+      }
+    },
+    20_000,
+  );
+
+  it.each([
+    ["a domain name (DNS rebinding)", (p: number) => `attacker.example:${p}`],
+    [
+      "a domain name that only starts with localhost",
+      (p: number) => `localhost.attacker.example:${p}`,
+    ],
+    ["a domain name with userinfo-looking text", (p: number) => `localhost:${p}@attacker.example`],
+    ["an IP address the server was not told to bind", (p: number) => `192.0.2.1:${p}`],
+  ])(
+    "answers 403 without the schema to a Host of %s when bound to loopback",
+    async (_name, hostFor) => {
+      const { port, child } = await spawnServe(["--db", dbPath, "--serve"]);
+      try {
+        const res = await httpGet(port, hostFor(port));
+        expect(res.status).toBe(403);
+        expect(res.body).not.toContain("SCHEMA_DATA");
+      } finally {
+        await stopServe(child);
+      }
+    },
+    20_000,
+  );
+
+  it("answers 403 to a request with no Host header", async () => {
+    const { port, child } = await spawnServe(["--db", dbPath, "--serve"]);
+    try {
+      const res = await new Promise<string>((resolve, reject) => {
+        const socket = connect(port, "127.0.0.1", () => socket.write("GET / HTTP/1.0\r\n\r\n"));
+        let raw = "";
+        socket.on("data", (c) => {
+          raw += c;
+        });
+        socket.on("close", () => resolve(raw));
+        socket.on("error", reject);
+      });
+      expect(res.startsWith("HTTP/1.1 403")).toBe(true);
+    } finally {
+      await stopServe(child);
+    }
+  }, 20_000);
+
+  it("lets a request through by IP address, but not by domain name, when bound to 0.0.0.0", async () => {
+    const port = await freePort();
+    const { child } = await spawnServe([
+      "--db",
+      dbPath,
+      "--serve",
+      "--host",
+      "0.0.0.0",
+      "--port",
+      String(port),
+    ]);
+    try {
+      expect((await httpGet(port, `192.0.2.1:${port}`)).status).toBe(200);
+      expect((await httpGet(port, `[2001:db8::1]:${port}`)).status).toBe(200);
+      expect((await httpGet(port, `attacker.example:${port}`)).status).toBe(403);
     } finally {
       await stopServe(child);
     }

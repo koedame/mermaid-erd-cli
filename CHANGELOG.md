@@ -4,6 +4,25 @@ All notable changes to this project are documented here. The format is based on
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Security
+
+- The viewer no longer turns HTML in a column comment or relationship label
+  into real elements. Mermaid's ER renderer drew those labels as HTML, so a
+  comment such as `<img src=...>` produced an `<img>` that made the browser
+  fetch the URL; labels are now drawn as plain SVG text (`htmlLabels: false`).
+- `--serve` answers 403 to a request whose `Host` header is not `localhost`,
+  `127.0.0.1`, `[::1]` or the `--host` address (any IP address when bound to
+  `0.0.0.0`), so a web page cannot read the schema through DNS rebinding. The
+  response also carries `X-Content-Type-Options: nosniff`.
+
+### Added
+
+- The end-to-end check asserts that the viewer makes no request outside
+  `file:`/`data:` and that markup in table names, column names, comments and
+  `--title` stays inert.
+
 ## [0.3.0] - 2026-05-28
 
 ### Added

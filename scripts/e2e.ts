@@ -9,7 +9,7 @@ import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import Database from "better-sqlite3";
-import { chromium } from "playwright";
+import { type BrowserContext, chromium } from "playwright";
 
 const root = resolve(fileURLToPath(new URL("..", import.meta.url)));
 const work = mkdtempSync(join(tmpdir(), "merd-e2e-"));
@@ -17,6 +17,9 @@ const dbPath = join(work, "sample.sqlite3");
 const outDir = join(work, "erd");
 const outHtml = join(outDir, "index.html");
 const screenshot = join(root, "test", "tmp", "e2e-screenshot.png");
+const hostileSql = join(root, "test", "fixtures", "hostile.sql");
+const hostileHtml = join(outDir, "hostile.html");
+const PAYLOAD = "</script><img src=x onerror=window.__x=1>";
 
 const EXPECTED_TABLES = ["post_tags", "posts", "tags", "teams", "users"];
 
@@ -48,6 +51,57 @@ function seed(): void {
   db.close();
 }
 
+// Table/column names, comments and --title come from the user's database, so a
+// value that looks like markup must show up as text and never run or load.
+async function checkHostileSchema(context: BrowserContext): Promise<void> {
+  execFileSync(
+    "node",
+    [
+      join(root, "dist", "cli.js"),
+      "--schema",
+      hostileSql,
+      "--out",
+      hostileHtml,
+      "--title",
+      PAYLOAD,
+    ],
+    { stdio: "inherit" },
+  );
+
+  const page = await context.newPage();
+  const problems: string[] = [];
+  page.on("pageerror", (e) => problems.push(`pageerror: ${e.message}`));
+  page.on("request", (r) => {
+    if (!/^(file|data):/.test(r.url())) problems.push(`request: ${r.url()}`);
+  });
+  await page.goto(pathToFileURL(hostileHtml).href);
+
+  const checkboxes = page.locator(".model-list input[type=checkbox]");
+  await checkboxes.first().waitFor({ timeout: 15_000 });
+  const count = await checkboxes.count();
+  if (count !== 2) fail(`hostile schema: expected 2 table checkboxes, found ${count}`);
+  // Comments are only drawn when these options are on, so turn both on.
+  await page.getByText("Show Column Comment", { exact: false }).first().click();
+  await page.getByText("Show Relationship Comment", { exact: false }).first().click();
+  for (let i = 0; i < count; i++) await checkboxes.nth(i).click();
+  const svg = page.locator("#preview > svg");
+  await svg.waitFor({ state: "attached", timeout: 20_000 });
+
+  if ((await page.evaluate(() => (window as { __x?: number }).__x)) !== undefined) {
+    fail("hostile schema: an injected onerror handler ran");
+  }
+  const injected = await page.locator("img[src=x]").count();
+  if (injected) fail(`hostile schema: ${injected} injected <img> element(s) in the DOM`);
+  if (!((await svg.textContent()) ?? "").includes("posts")) {
+    fail("hostile schema: the diagram did not render");
+  }
+  if (await page.locator('[role="alert"]').count()) {
+    fail("hostile schema: a render-error banner is visible");
+  }
+  if (problems.length) fail(`hostile schema: ${problems.join("\n")}`);
+  await page.close();
+}
+
 async function main(): Promise<void> {
   mkdirSync(join(root, "test", "tmp"), { recursive: true });
   seed();
@@ -66,6 +120,13 @@ async function main(): Promise<void> {
   page.on("pageerror", (e) => consoleErrors.push(`pageerror: ${e.message}`));
   page.on("console", (m) => {
     if (m.type() === "error") consoleErrors.push(`console.error: ${m.text()}`);
+  });
+
+  // Only the file itself and inline data: URLs may be fetched; anything else
+  // means the viewer reaches out to the network.
+  const outsideRequests: string[] = [];
+  page.on("request", (r) => {
+    if (!/^(file|data):/.test(r.url())) outsideRequests.push(r.url());
   });
 
   await page.goto(pathToFileURL(outHtml).href);
@@ -93,6 +154,10 @@ async function main(): Promise<void> {
     fail("a render-error banner is visible");
   }
 
+  if (outsideRequests.length) {
+    fail(`the viewer made requests outside file:/data::\n${outsideRequests.join("\n")}`);
+  }
+
   await page.screenshot({ path: screenshot, fullPage: true });
 
   // 4. Copy-as-Markdown puts a fenced mermaid block on the clipboard.
@@ -113,9 +178,13 @@ async function main(): Promise<void> {
 
   if (consoleErrors.length) fail(`browser reported errors:\n${consoleErrors.join("\n")}`);
 
+  await checkHostileSchema(context);
+
   await browser.close();
   rmSync(work, { recursive: true, force: true });
-  console.log(`E2E PASS: ${count} tables rendered, markdown copy + PNG export verified.`);
+  console.log(
+    `E2E PASS: ${count} tables rendered, markdown copy + PNG export verified, no outside requests, hostile schema inert.`,
+  );
   console.log(`Screenshot: ${screenshot}`);
 }
 
