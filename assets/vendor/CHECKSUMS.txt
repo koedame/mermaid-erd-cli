@@ -1,5 +1,5 @@
 # SHA-256 checksums of the vendored front-end bundles.
 # Verify with: cd assets/vendor && sha256sum -c CHECKSUMS.txt
 70137e77bb273bb2ef972b86e8b0400cca8be53cb25bfc45911a186dc98665de  mermaid.min.js
-757760234f01934a6248514240456d20abb741c128dff4d284d14eac21e3d12b  tailwind.css
+f095c7bddd783386be4e8d230cfd1d7b5aeb93ddc29c6b9f3d93ed38be2b89fa  tailwind.css
 def6d1d005478eabe6f4adb538a420be6e779feebb02c488935a31315258dadd  vue.global.prod.min.js

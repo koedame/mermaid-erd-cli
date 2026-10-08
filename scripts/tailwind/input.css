@@ -1,3 +1,35 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+@plugin "@tailwindcss/forms";
+@plugin "@tailwindcss/typography";
+@source "../../assets/template.html";
+@source "../../assets/logo.svg";
+
+/* Tailwind 4 changed these defaults; keep the Tailwind 3 look. */
+@theme {
+  --font-sans: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji",
+    "Segoe UI Symbol", "Noto Color Emoji";
+}
+
+@layer base {
+  *,
+  ::after,
+  ::before,
+  ::backdrop,
+  ::file-selector-button {
+    border-color: var(--color-gray-200, currentColor);
+  }
+
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
+}
+
+/* The forms plugin now styles checked boxes with zero specificity, so a
+   border-gray-300 class would show through; unlayered rules beat the layers. */
+[type="checkbox"]:checked,
+[type="checkbox"]:indeterminate,
+[type="radio"]:checked {
+  border-color: transparent;
+}

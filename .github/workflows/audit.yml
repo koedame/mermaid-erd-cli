@@ -46,9 +46,6 @@ jobs:
         run: npm audit --package-lock-only --omit=dev --audit-level=high
 
       # Build-time only (builds assets/vendor/tailwind.css, not shipped).
-      # Tailwind 3 pulls in braces, which has an advisory and no patched
-      # release, so "high" cannot pass until Tailwind is replaced; only
-      # critical fails here.
       - name: Audit the Tailwind build dependencies
         working-directory: scripts/tailwind
-        run: npm audit --package-lock-only --audit-level=critical
+        run: npm audit --package-lock-only --audit-level=high

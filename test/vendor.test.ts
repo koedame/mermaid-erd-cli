@@ -28,7 +28,7 @@ describe("generated HTML", () => {
     const html = await renderHtml(data);
     expect(html).not.toContain("cdn.tailwindcss.com");
     expect(html).not.toContain("tailwind.config");
-    expect(html).toMatch(/<style>\/\*! tailwindcss v3\.1\.8 \| MIT License/);
+    expect(html).toMatch(/<style>\/\*! tailwindcss v4\.3\.3 \| MIT License/);
   });
 
   it("carries this package's license and the third-party list in a comment at the top, when the HTML is generated", async () => {
