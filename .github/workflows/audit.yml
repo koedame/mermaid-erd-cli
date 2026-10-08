@@ -1,0 +1,54 @@
+name: Audit
+
+# Dependencies are checked against the npm advisory database. A new advisory
+# can appear without any change to this repository, so besides pull requests
+# that touch a lock file and pushes, this runs every week; a failing scheduled
+# run is how a freshly published advisory reaches us.
+#
+# This checks the lock files themselves. Dependabot alerts only cover what
+# GitHub's dependency graph picked up, so zero alerts is not proof of zero
+# advisories.
+
+on:
+  pull_request:
+    paths:
+      - "package-lock.json"
+      - "scripts/tailwind/package-lock.json"
+      - ".github/workflows/audit.yml"
+  push:
+    branches: [main]
+  schedule:
+    - cron: "17 3 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  npm-audit:
+    name: npm advisories
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 20
+
+      # Everything, including dev dependencies: they run on the machines of
+      # whoever builds and tests this package.
+      - name: Audit all dependencies
+        run: npm audit --package-lock-only --audit-level=high
+
+      # What ends up on a user's machine when the package is installed.
+      - name: Audit the published package's dependencies
+        run: npm audit --package-lock-only --omit=dev --audit-level=high
+
+      # Build-time only (builds assets/vendor/tailwind.css, not shipped).
+      # Tailwind 3 pulls in braces, which has an advisory and no patched
+      # release, so "high" cannot pass until Tailwind is replaced; only
+      # critical fails here.
+      - name: Audit the Tailwind build dependencies
+        working-directory: scripts/tailwind
+        run: npm audit --package-lock-only --audit-level=critical
