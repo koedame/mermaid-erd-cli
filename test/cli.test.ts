@@ -1,5 +1,5 @@
 import { type ChildProcess, execFile, spawn } from "node:child_process";
-import { existsSync, mkdtempSync, rmSync } from "node:fs";
+import { existsSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 import { get } from "node:http";
 import { connect, createServer } from "node:net";
@@ -120,6 +120,42 @@ beforeAll(() => {
 });
 
 afterAll(() => rmSync(dir, { recursive: true, force: true }));
+
+describe("--config", () => {
+  const schema = () => {
+    const file = join(dir, "config-schema.sql");
+    writeFileSync(file, "CREATE TABLE secret_hr(id int primary key);CREATE TABLE a(id int);");
+    return file;
+  };
+
+  it("fails when the named config file does not exist", async () => {
+    await expect(
+      mermaidErd([
+        "--schema",
+        schema(),
+        "--format",
+        "mermaid",
+        "--config",
+        join(dir, "nonexistent.yml"),
+      ]),
+    ).rejects.toMatchObject({ stderr: expect.stringContaining("cannot read config file") });
+  });
+
+  it("applies the named config file when it is readable", async () => {
+    const config = join(dir, "hide-secret.yml");
+    writeFileSync(config, 'ignore_tables:\n  - "^secret_"\n');
+    const { stdout } = await mermaidErd([
+      "--schema",
+      schema(),
+      "--format",
+      "mermaid",
+      "--config",
+      config,
+    ]);
+    expect(stdout).not.toContain("secret_hr");
+    expect(stdout).toContain("a");
+  });
+});
 
 describe("CLI output", () => {
   it("streams Mermaid text to stdout by default for --format mermaid", async () => {
