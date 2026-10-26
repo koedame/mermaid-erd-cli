@@ -2,16 +2,24 @@ import { readFile } from "node:fs/promises";
 
 export const DEFAULT_IGNORE_TABLES = ["^schema_migrations$", "^ar_internal_metadata$"];
 
+const DEFAULT_CONFIG_PATH = "mermaid-erd.yml";
+
 /**
- * Read `ignore_tables` from a config file (default `mermaid-erd.yml`). Returns
- * null when no file is found so the caller can fall back to defaults.
+ * Read `ignore_tables` from a config file. With no `path`, the default
+ * `mermaid-erd.yml` is optional: a missing file returns null so the caller can
+ * fall back to defaults. A `path` the caller named must be readable, and any
+ * other read error (permissions, a directory) is never swallowed, so a config
+ * that was meant to exclude tables can't silently fail to apply.
  */
-export async function loadIgnoreTables(path = "mermaid-erd.yml"): Promise<string[] | null> {
+export async function loadIgnoreTables(path?: string): Promise<string[] | null> {
+  const explicit = path !== undefined;
+  path ??= DEFAULT_CONFIG_PATH;
   let content: string;
   try {
     content = await readFile(path, "utf8");
-  } catch {
-    return null;
+  } catch (err) {
+    if (!explicit && (err as NodeJS.ErrnoException).code === "ENOENT") return null;
+    throw new Error(`cannot read config file ${path}: ${(err as Error).message}`);
   }
   return path.endsWith(".json")
     ? validate(JSON.parse(content)?.ignore_tables, path)

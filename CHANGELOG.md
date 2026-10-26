@@ -8,6 +8,10 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Changed
 
+- `--config` now fails when the named file is missing or unreadable, instead of
+  falling back to the default ignore list. An unreadable `mermaid-erd.yml` found
+  in the current directory also fails; only an absent one is skipped.
+
 - The stylesheet is now built with Tailwind CSS 4 (it was 3.1.8). The viewer looks
   the same; the build no longer depends on packages with an unpatched advisory.
 
