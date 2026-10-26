@@ -141,10 +141,16 @@ async function mermaidPackages() {
   return packages;
 }
 
-function vuePackages() {
+async function vuePackages() {
   // The packages of vuejs/core are released in lockstep. compiler-sfc and
   // server-renderer are not part of the global build.
-  const { version, globalBuildPackages } = config.vue;
+  const { version, file, globalBuildPackages } = config.vue;
+  const dir = await fetchPackage("vue", version);
+  if (sha256(path.join(dir, "dist/vue.global.prod.js")) !== sha256(path.join(vendor, file))) {
+    throw new Error(
+      `${file} is not the dist/vue.global.prod.js of vue@${version}; replace it and fix bundles.json first`,
+    );
+  }
   return [{ name: "vue", version }, ...globalBuildPackages.map((name) => ({ name, version }))];
 }
 
@@ -260,7 +266,7 @@ const bundles = [
   {
     file: config.vue.file,
     title: `Vue ${config.vue.version} (global production build)`,
-    packages: vuePackages(),
+    packages: await vuePackages(),
   },
   {
     file: "tailwind.css",
