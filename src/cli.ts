@@ -49,7 +49,7 @@ interface Options {
   host?: string;
   ignoreTables?: string;
   title?: string;
-  config: string;
+  config?: string;
 }
 
 function parse(argv: string[]): Options | "help" {
@@ -66,7 +66,7 @@ function parse(argv: string[]): Options | "help" {
       host: { type: "string" },
       "ignore-tables": { type: "string" },
       title: { type: "string" },
-      config: { type: "string", default: "mermaid-erd.yml" },
+      config: { type: "string" },
       help: { type: "boolean", short: "h", default: false },
     },
     allowPositionals: false,
@@ -103,7 +103,7 @@ function parse(argv: string[]): Options | "help" {
     host: values.host as string | undefined,
     ignoreTables: values["ignore-tables"] as string | undefined,
     title: values.title as string | undefined,
-    config: values.config as string,
+    config: values.config as string | undefined,
   };
 }
 
