@@ -23,6 +23,8 @@ const checksums = Object.fromEntries(
     }),
 );
 
+const bundles = JSON.parse(readFileSync(join(root, "scripts", "licenses", "bundles.json"), "utf8"));
+
 describe("generated HTML", () => {
   it("does not load the Tailwind Play CDN script and inlines a stylesheet built by the Tailwind CLI, when the HTML is generated", async () => {
     const html = await renderHtml(data);
@@ -62,5 +64,12 @@ describe("vendored front-end files", () => {
       ].map((m) => [m[1], m[2]]),
     );
     expect(listed).toEqual(checksums);
+  });
+
+  it("names in bundles.json the Mermaid and Vue versions that are inside the vendored files, which is what scripts/audit-vendor.mjs audits", () => {
+    const mermaid = readFileSync(join(vendor, bundles.mermaid.file), "utf8");
+    const vue = readFileSync(join(vendor, bundles.vue.file), "utf8");
+    expect(mermaid).toContain(`"${bundles.mermaid.version}"`);
+    expect(vue.slice(0, 200)).toContain(`vue v${bundles.vue.version}`);
   });
 });

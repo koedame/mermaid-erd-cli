@@ -47,9 +47,13 @@ bash scripts/verify-db.sh
 ## Vendored front-end files
 
 `assets/vendor/` holds the files inlined into every generated HTML: the Mermaid
-and Vue bundles (downloaded as they are published) and `tailwind.css`. The
+and Vue bundles (`dist/mermaid.min.js` of the `mermaid` package and
+`dist/vue.global.prod.js` of the `vue` package, copied as they are published) and
+`tailwind.css`. Their versions are in `scripts/licenses/bundles.json`. They are
+files, not npm dependencies, so `node scripts/audit-vendor.mjs` checks those two
+versions against the npm advisory database; the Audit workflow runs it. The
 stylesheet is not downloaded; it is built from the viewer's markup with the
-Tailwind CSS command-line tool (3.1.8, with the forms and typography plugins).
+Tailwind CSS command-line tool (4.x, with the forms plugin).
 Inputs are in `scripts/tailwind/`.
 
 After changing a class in `assets/template.html`, or a pinned version:
