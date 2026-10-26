@@ -162,6 +162,16 @@ describe("CLI output", () => {
   });
 });
 
+describe("CLI --db error messages", () => {
+  it("leaves the credentials of an unrecognised --db URL out of stderr", async () => {
+    const failure = await mermaidErd(["--db", "postgre://user:S3CRETpass@host/db"]).catch(
+      (err) => err as { stderr: string },
+    );
+    expect(failure.stderr).toContain("Could not detect database type");
+    expect(failure.stderr).not.toContain("S3CRETpass");
+  });
+});
+
 describe("CLI --serve", () => {
   it("serves the HTML viewer as text/html on the port given by --port", async () => {
     const port = await freePort();

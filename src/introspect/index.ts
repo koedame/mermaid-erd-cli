@@ -46,6 +46,6 @@ function introspectorForUrl(url: string, pgSchema?: string): Introspector {
   }
 
   throw new Error(
-    `Could not detect database type from "${url}". Use a postgres://, mysql://, or sqlite:// URL, or a path ending in .sqlite/.sqlite3/.db.`,
+    `Could not detect database type from the --db value. Use a postgres://, mysql://, or sqlite:// URL, or a path ending in .sqlite/.sqlite3/.db.`,
   );
 }
