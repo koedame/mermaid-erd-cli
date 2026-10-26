@@ -182,10 +182,25 @@ async function describe({ name, version }) {
     );
   if (/GPL/i.test(spdx))
     throw new Error(`${name}@${version} is ${spdx}: stop and report instead of shipping it`);
-  if (licenseFiles.length === 0) throw new Error(`${name}@${version} has no license file`);
-  const text = licenseFiles
-    .map((f) => fs.readFileSync(path.join(dir, f), "utf8").replace(/\r\n/g, "\n").trim())
-    .join("\n\n");
+  // A few packages ship no license file and state the license in the README's
+  // "License" section instead; take that section, but only if it carries the
+  // permission text itself.
+  const readmeLicense = (() => {
+    const readme = files.find((f) => /^readme(\.md)?$/i.test(f));
+    if (!readme) return "";
+    const section = fs
+      .readFileSync(path.join(dir, readme), "utf8")
+      .replace(/\r\n/g, "\n")
+      .match(/^#+ +licen[sc]e\s*\n([\s\S]*?)(?=^#+ |(?![\s\S]))/im)?.[1];
+    return section && /permission is hereby granted/i.test(section) ? section.trim() : "";
+  })();
+  if (licenseFiles.length === 0 && !readmeLicense)
+    throw new Error(`${name}@${version} has no license file`);
+  const text = licenseFiles.length
+    ? licenseFiles
+        .map((f) => fs.readFileSync(path.join(dir, f), "utf8").replace(/\r\n/g, "\n").trim())
+        .join("\n\n")
+    : readmeLicense;
   const copyright = text
     .split("\n")
     .filter((line) => COPYRIGHT_LINE.test(line) && !/\[(yyyy|name)/i.test(line))

@@ -7,13 +7,18 @@ name: Audit
 #
 # This checks the lock files themselves. Dependabot alerts only cover what
 # GitHub's dependency graph picked up, so zero alerts is not proof of zero
-# advisories.
+# advisories. The Mermaid and Vue bundles in assets/vendor/ are files, not
+# dependencies, so neither the lock files nor Dependabot cover them; the last
+# step audits their versions.
 
 on:
   pull_request:
     paths:
       - "package-lock.json"
       - "scripts/tailwind/package-lock.json"
+      - "assets/vendor/**"
+      - "scripts/licenses/bundles.json"
+      - "scripts/audit-vendor.mjs"
       - ".github/workflows/audit.yml"
   push:
     branches: [main]
@@ -49,3 +54,7 @@ jobs:
       - name: Audit the Tailwind build dependencies
         working-directory: scripts/tailwind
         run: npm audit --package-lock-only --audit-level=high
+
+      # Mermaid and Vue are copied into every generated HTML file.
+      - name: Audit the bundled Mermaid and Vue
+        run: node scripts/audit-vendor.mjs

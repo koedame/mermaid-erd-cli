@@ -8,6 +8,9 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Changed
 
+- The bundled Mermaid is now 11.17.2 (it was 11.15.0) and Vue 3.5.44 (it was
+  3.2.40). The Audit workflow now also checks these two versions, which are
+  files and not npm dependencies.
 - The stylesheet is now built with Tailwind CSS 4 (it was 3.1.8). The viewer looks
   the same; the build no longer depends on packages with an unpatched advisory.
 
