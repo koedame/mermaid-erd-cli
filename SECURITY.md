@@ -15,6 +15,8 @@ Report security issues via GitHub's private vulnerability reporting:
 2. Click **"Report a vulnerability"**
 3. Fill in the details and submit
 
+We will reply within 7 days to confirm that we received your report.
+
 This project is maintained on a best-effort basis.
-You can expect an acknowledgement within a few days and a fix or
-workaround as soon as reasonably possible, depending on severity.
+We will aim to provide a fix or workaround as soon as reasonably possible,
+depending on severity.
