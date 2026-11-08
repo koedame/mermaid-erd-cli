@@ -8,6 +8,10 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Changed
 
+- A run of `%` in a table name, column name or comment is now written as a
+  single `%` in the viewer and in the Mermaid and JSON output.
+- Reading a SQL dump with many unclosed `CREATE TABLE` bodies now takes time in
+  proportion to its size; it used to slow down with the square of the size.
 - The bundled Mermaid is now 11.17.2 (it was 11.15.0) and Vue 3.5.44 (it was
   3.2.40). The Audit workflow now also checks these two versions, which are
   files and not npm dependencies.
