@@ -128,7 +128,7 @@ docker run --rm -v "$PWD:/work" mermaid-erd-cli --schema schema.rb
 | `--port <number>` | Port to listen on with `--serve` | random |
 | `--host <address>` | Address to bind with `--serve`. `0.0.0.0` exposes your full schema on every network interface — use only on trusted networks | `127.0.0.1` |
 | `--ignore-tables <patterns>` | Comma-separated regex patterns to exclude | `^schema_migrations$,^ar_internal_metadata$` |
-| `--config <path>` | Config file path | `mermaid-erd.yml` |
+| `--config <path>` | Config file path. Fails if the file named here cannot be read | `mermaid-erd.yml` (optional) |
 | `--title <name>` | Title shown in the HTML viewer | `Database` |
 
 You can also keep ignore patterns in a `mermaid-erd.yml`:
@@ -138,6 +138,10 @@ ignore_tables:
   - "^schema_migrations$"
   - "_old$"
 ```
+
+When `--config` is not given, `mermaid-erd.yml` in the current directory is read if it exists.
+The patterns are regular expressions and are run as written, so a pathological pattern can make
+the tool hang. Don't run it in a directory whose `mermaid-erd.yml` you don't trust.
 
 ## Development
 

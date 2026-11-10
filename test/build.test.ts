@@ -114,4 +114,25 @@ describe("buildSchemaData Mermaid safety", () => {
     expect(Models[0].Columns[0].comment).not.toContain('"');
     expect(Models[0].Columns[0].comment).not.toContain("\n");
   });
+
+  it("writes a run of % in names and comments as a single %", () => {
+    const { Models, Relations } = buildSchemaData({
+      tables: [
+        { name: "parents", comment: null, columns: [], foreignKeys: [] },
+        {
+          name: "kids%%%",
+          comment: "100%% {a}%%",
+          columns: [
+            { name: "x", type: "text", nullable: true, primaryKey: false, comment: "%%{b}" },
+          ],
+          foreignKeys: [{ columns: ["parent_id"], referencedTable: "parents" }],
+        },
+      ],
+    });
+    const kids = Models.find((m) => m.ModelName === "kids___")!;
+    expect(kids.TableName).toBe("kids%");
+    expect(kids.TableComment).toBe("100% {a}%");
+    expect(kids.Columns[0].comment).toBe("%{b}");
+    expect(JSON.stringify({ Models, Relations })).not.toContain("%%");
+  });
 });

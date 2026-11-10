@@ -171,4 +171,11 @@ describe("parseSqlDdl", () => {
     expect(t.comment).toBe("app users");
     expect(t.columns.find((c) => c.name === "email")!.comment).toBe("login address");
   });
+
+  it("parses a dump with many unclosed table bodies in linear time", () => {
+    const started = performance.now();
+    const parsed = parseSqlDdl(`${"CREATE TABLE a(".repeat(80_000)}CREATE TABLE b (id int);`);
+    expect(performance.now() - started).toBeLessThan(2_000);
+    expect(parsed.tables.map((t) => t.name)).toEqual(["b"]);
+  });
 });

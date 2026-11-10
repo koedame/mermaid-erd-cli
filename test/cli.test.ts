@@ -1,5 +1,5 @@
 import { type ChildProcess, execFile, spawn } from "node:child_process";
-import { existsSync, mkdtempSync, rmSync } from "node:fs";
+import { existsSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 import { get } from "node:http";
 import { connect, createServer } from "node:net";
@@ -121,6 +121,42 @@ beforeAll(() => {
 
 afterAll(() => rmSync(dir, { recursive: true, force: true }));
 
+describe("--config", () => {
+  const schema = () => {
+    const file = join(dir, "config-schema.sql");
+    writeFileSync(file, "CREATE TABLE secret_hr(id int primary key);CREATE TABLE a(id int);");
+    return file;
+  };
+
+  it("fails when the named config file does not exist", async () => {
+    await expect(
+      mermaidErd([
+        "--schema",
+        schema(),
+        "--format",
+        "mermaid",
+        "--config",
+        join(dir, "nonexistent.yml"),
+      ]),
+    ).rejects.toMatchObject({ stderr: expect.stringContaining("cannot read config file") });
+  });
+
+  it("applies the named config file when it is readable", async () => {
+    const config = join(dir, "hide-secret.yml");
+    writeFileSync(config, 'ignore_tables:\n  - "^secret_"\n');
+    const { stdout } = await mermaidErd([
+      "--schema",
+      schema(),
+      "--format",
+      "mermaid",
+      "--config",
+      config,
+    ]);
+    expect(stdout).not.toContain("secret_hr");
+    expect(stdout).toContain("a");
+  });
+});
+
 describe("CLI output", () => {
   it("streams Mermaid text to stdout by default for --format mermaid", async () => {
     const { stdout } = await mermaidErd(["--db", dbPath, "--format", "mermaid"]);
@@ -159,6 +195,16 @@ describe("CLI output", () => {
   it("accepts mmd as an alias for mermaid", async () => {
     const { stdout } = await mermaidErd(["--db", dbPath, "--format", "mmd"]);
     expect(stdout.startsWith("erDiagram")).toBe(true);
+  });
+});
+
+describe("CLI --db error messages", () => {
+  it("leaves the credentials of an unrecognised --db URL out of stderr", async () => {
+    const failure = await mermaidErd(["--db", "postgre://user:S3CRETpass@host/db"]).catch(
+      (err) => err as { stderr: string },
+    );
+    expect(failure.stderr).toContain("Could not detect database type");
+    expect(failure.stderr).not.toContain("S3CRETpass");
   });
 });
 
@@ -324,17 +370,14 @@ describe("CLI --serve", () => {
 
   // `--port -1` is rejected one layer earlier by parseArgs (a leading "-" looks
   // like an option), so negative values never reach this validator.
-  it.each([
-    "abc",
-    "0x50",
-    "1e3",
-    "3000.5",
-    "",
-  ])("rejects the malformed --port %j before starting", async (bad) => {
-    await expect(mermaidErd(["--db", dbPath, "--serve", "--port", bad])).rejects.toMatchObject({
-      stderr: expect.stringContaining("invalid --port"),
-    });
-  });
+  it.each(["abc", "0x50", "1e3", "3000.5", ""])(
+    "rejects the malformed --port %j before starting",
+    async (bad) => {
+      await expect(mermaidErd(["--db", dbPath, "--serve", "--port", bad])).rejects.toMatchObject({
+        stderr: expect.stringContaining("invalid --port"),
+      });
+    },
+  );
 
   it("warns that --port has no effect without --serve", async () => {
     const { stderr } = await mermaidErd(["--db", dbPath, "--format", "mermaid", "--port", "3000"]);

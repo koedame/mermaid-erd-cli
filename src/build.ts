@@ -41,12 +41,15 @@ function sanitizeIdentifier(name: string): string {
 /**
  * Comments and labels are emitted inside Mermaid double-quoted strings and
  * `%%` comment lines. Strip the characters that would break out of those
- * contexts (double quotes and newlines); collapse whitespace runs.
+ * contexts (double quotes and newlines); collapse whitespace runs. `%%` has a
+ * meaning of its own in Mermaid source, so a run of `%` is collapsed to one and
+ * the text never contains `%%`.
  */
 function sanitizeText(text: string): string {
   return text
     .replace(/["\r\n]+/g, " ")
     .replace(/\s+/g, " ")
+    .replace(/%+/g, "%")
     .trim();
 }
 

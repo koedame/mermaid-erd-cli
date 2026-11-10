@@ -191,17 +191,36 @@ function findCreateTables(
   const out: Array<{ name: string; body: string; maskedBody: string }> = [];
   // Match on `masked` so parens inside a literal/identifier can't be mistaken
   // for the table body; slice the real name and bodies from the same indices.
+  const closeOf = matchingParens(masked);
   for (const match of masked.matchAll(re)) {
     const openParen = (match.index ?? 0) + match[0].length - 1;
-    const span = balancedSpan(masked, openParen);
-    if (span === null) continue;
+    const closeParen = closeOf.get(openParen);
+    if (closeParen === undefined) continue;
     out.push({
       name: unquote(sliceGroup(cleaned, match, 1)),
-      body: cleaned.slice(span[0], span[1]),
-      maskedBody: masked.slice(span[0], span[1]),
+      body: cleaned.slice(openParen + 1, closeParen),
+      maskedBody: masked.slice(openParen + 1, closeParen),
     });
   }
   return out;
+}
+
+/**
+ * The index of the `)` that closes each `(` in `sql`, found in one pass so a
+ * dump full of unclosed bodies is not rescanned to its end once per table.
+ * Unclosed parens have no entry.
+ */
+function matchingParens(sql: string): Map<number, number> {
+  const closeOf = new Map<number, number>();
+  const open: number[] = [];
+  for (let i = 0; i < sql.length; i++) {
+    if (sql[i] === "(") open.push(i);
+    else if (sql[i] === ")") {
+      const start = open.pop();
+      if (start !== undefined) closeOf.set(start, i);
+    }
+  }
+  return closeOf;
 }
 
 /** Given the index of an opening `(`, return [innerStart, innerEnd) indices. */
