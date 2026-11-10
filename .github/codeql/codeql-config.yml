@@ -1,0 +1,6 @@
+# This repository's own code is what the analysis is for. docs/index.html is
+# generated and inlines the Mermaid and Vue bundles, so a new release of either
+# would otherwise report findings in code written elsewhere.
+paths-ignore:
+  - docs/index.html
+  - assets/vendor
