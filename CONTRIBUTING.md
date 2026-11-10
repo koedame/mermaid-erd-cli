@@ -82,7 +82,7 @@ with `npm run build && npm run demo`.
 ## Pull requests
 
 Open PRs against `main`. CI runs the build, tests, and the e2e check across
-Node 20/22.
+Node 22/24.
 
 ## Releasing
 
