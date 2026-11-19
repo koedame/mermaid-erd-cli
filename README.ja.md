@@ -1,16 +1,21 @@
 [English](./README.md) | [日本語](./README.ja.md) | [简体中文](./README.zh.md) | [한국어](./README.ko.md) | [Español](./README.es.md) | [Français](./README.fr.md) | [Deutsch](./README.de.md) | [Português](./README.pt.md) | [Русский](./README.ru.md)
 
+<div align="center">
+
 # mermaid-erd-cli
 
+**実際のデータベースやスキーマダンプから [Mermaid](https://mermaid.js.org/) の ER 図を生成します。ORM やフレームワークは不要です。**
+
+<a href="https://koedame.github.io/mermaid-erd-cli/#eyJzZWxlY3RNb2RlbHMiOlsidGVhbXMiLCJ1c2VycyIsInBvc3RzIiwiY29tbWVudHMiLCJ0YWdzIiwicG9zdF90YWdzIl0sImlzUHJldmlld1JlbGF0aW9ucyI6ZmFsc2UsImlzU2hvd1JlbGF0aW9uQ29tbWVudCI6ZmFsc2UsImlzU2hvd0tleSI6dHJ1ZSwiaXNTaG93Q29tbWVudCI6ZmFsc2UsImlzSGlkZUNvbHVtbnMiOmZhbHNlfQ=="><img alt="サンプルのブログ用スキーマの 6 テーブルと、外部キーによる関連を表示した mermaid-erd-cli の HTML ビューア" src="https://raw.githubusercontent.com/koedame/mermaid-erd-cli/main/docs/images/hero.png" width="800"></a>
+
 [![CI](https://github.com/koedame/mermaid-erd-cli/actions/workflows/ci.yml/badge.svg)](https://github.com/koedame/mermaid-erd-cli/actions/workflows/ci.yml)
-[![npm version](https://badge.fury.io/js/mermaid-erd-cli.svg)](https://www.npmjs.com/package/mermaid-erd-cli)
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](./LICENSE)
+[![npm version](https://img.shields.io/npm/v/mermaid-erd-cli?color=336699)](https://www.npmjs.com/package/mermaid-erd-cli)
+![Node.js 22.12+](https://img.shields.io/badge/node-%E2%89%A522.12-336699)
+[![License: MIT](https://img.shields.io/badge/license-MIT-336699)](./LICENSE)
 
-実際のデータベースやスキーマダンプから [Mermaid](https://mermaid.js.org/) の ER 図を生成します。ORM やフレームワークは不要です。
+[ライブデモを開く](https://koedame.github.io/mermaid-erd-cli/#eyJzZWxlY3RNb2RlbHMiOlsidGVhbXMiLCJ1c2VycyIsInBvc3RzIiwiY29tbWVudHMiLCJ0YWdzIiwicG9zdF90YWdzIl0sImlzUHJldmlld1JlbGF0aW9ucyI6ZmFsc2UsImlzU2hvd1JlbGF0aW9uQ29tbWVudCI6ZmFsc2UsImlzU2hvd0tleSI6dHJ1ZSwiaXNTaG93Q29tbWVudCI6ZmFsc2UsImlzSGlkZUNvbHVtbnMiOmZhbHNlfQ==) · [クイックスタート](#クイックスタート) · [使い方](#使い方) · [Docker](#docker) · [オプション](#オプション)
 
-[![screenshot](https://raw.githubusercontent.com/koedame/mermaid-erd-cli/main/docs/screenshot.png)](https://koedame.github.io/mermaid-erd-cli/#eyJzZWxlY3RNb2RlbHMiOlsidGVhbXMiLCJ1c2VycyIsInBvc3RzIiwiY29tbWVudHMiLCJ0YWdzIiwicG9zdF90YWdzIl0sImlzUHJldmlld1JlbGF0aW9ucyI6ZmFsc2UsImlzU2hvd1JlbGF0aW9uQ29tbWVudCI6ZmFsc2UsImlzU2hvd0tleSI6dHJ1ZSwiaXNTaG93Q29tbWVudCI6ZmFsc2UsImlzSGlkZUNvbHVtbnMiOmZhbHNlfQ==)
-
-**▶ [ライブデモを開く](https://koedame.github.io/mermaid-erd-cli/#eyJzZWxlY3RNb2RlbHMiOlsidGVhbXMiLCJ1c2VycyIsInBvc3RzIiwiY29tbWVudHMiLCJ0YWdzIiwicG9zdF90YWdzIl0sImlzUHJldmlld1JlbGF0aW9ucyI6ZmFsc2UsImlzU2hvd1JlbGF0aW9uQ29tbWVudCI6ZmFsc2UsImlzU2hvd0tleSI6dHJ1ZSwiaXNTaG93Q29tbWVudCI6ZmFsc2UsImlzSGlkZUNvbHVtbnMiOmZhbHNlfQ==)**
+</div>
 
 スキーマ（テーブル・カラム・主キー・外部キー・コメント）を内省し、次のいずれかを出力します:
 
@@ -18,6 +23,24 @@
 - **Mermaid** テキスト / **JSON** を **標準出力** へ。他ツールと組み合わせて使える
 
 関連は外部キーから導出します。参照される側が「1」、外部キーを持つ側が「多」。`NOT NULL` の外部キーは必須の関連（`||--o{`）、nullable な外部キーは任意の関連（`|o--o{`）として描画されます。
+
+## ハイライト
+
+- **実際の DB 3 種類とダンプ 2 種類に対応。** PostgreSQL・MySQL・SQLite に直接つなげるほか、Rails の `schema.rb` や SQL DDL は DB 接続もドライバーも不要です。
+- **自己完結した HTML 1 ファイル。** Mermaid・Vue・Tailwind をインライン同梱しているのでオフラインで動き、テーブルを選んで SVG / PNG にエクスポートできます。
+- **何にでもパイプできる。** `--format mermaid` と `--format json` は標準出力へ書き出します。
+- **コンテナでも動く。** 3 つのドライバーをすべて同梱した distroless の Docker イメージを GHCR と Docker Hub で配布しています。
+- **ビューアは 9 言語。** English, 日本語, 简体中文, 한국어, Español, Français, Deutsch, Português, Русский。
+
+## クイックスタート
+
+Node.js 22.12 以降が必要です。`npx` が CLI を取得するので、先にインストールするものはありません。
+
+```bash
+npx mermaid-erd-cli --schema ./db/schema.rb
+```
+
+`erd/index.html` が書き出されます。ブラウザで開き、サイドバーでテーブルを選んで SVG / PNG にエクスポートします。実際の DB を読むときは `--db "postgres://user:pass@localhost:5432/mydb"`（または SQLite のファイルパス）を渡します。ほかの例は[使い方](#使い方)にあります。
 
 ## 使い方
 
@@ -149,10 +172,10 @@ npm run e2e        # 生成したビューアのヘッドレスブラウザ検�
 
 HTML ビューアと同梱フロントエンドライブラリは [rails-mermaid_erd](https://github.com/koedame/rails-mermaid_erd)（MIT）から派生しています。ビューアと `SCHEMA_DATA` の契約はそのまま流用し、Rails/ActiveRecord による抽出を DB 直接内省とスキーマダンプ解析に置き換えました。同梱の Mermaid・Vue と、Tailwind CSS で生成したスタイルシートは、各ライセンス（MIT・ISC・BSD-3-Clause・Apache-2.0 ほか）で再配布しています。著作権表示とライセンス本文は [`assets/vendor/LICENSES.md`](./assets/vendor/LICENSES.md) と、生成する HTML ファイルの先頭にあります。
 
-## ライセンス
-
-MIT — [LICENSE](./LICENSE) を参照。
-
 ## 商標
 
 このプロジェクトは、Mermaid プロジェクト、Mermaid Chart Inc. と提携しておらず、これらの公認・後援も受けていません。Mermaid Chart Inc. は、米国で MERMAID CHART と MERMAID の商標を登録または出願しています。PostgreSQL、MySQL、SQLite、Docker、およびそのほかの商標は、それぞれの権利者に帰属します。
+
+## ライセンス
+
+MIT — [LICENSE](./LICENSE) を参照。

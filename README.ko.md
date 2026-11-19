@@ -1,16 +1,21 @@
 [English](./README.md) | [日本語](./README.ja.md) | [简体中文](./README.zh.md) | [한국어](./README.ko.md) | [Español](./README.es.md) | [Français](./README.fr.md) | [Deutsch](./README.de.md) | [Português](./README.pt.md) | [Русский](./README.ru.md)
 
+<div align="center">
+
 # mermaid-erd-cli
 
+**실제 데이터베이스나 스키마 덤프로부터 [Mermaid](https://mermaid.js.org/) ER 다이어그램을 생성합니다. ORM이나 프레임워크가 필요 없습니다.**
+
+<a href="https://koedame.github.io/mermaid-erd-cli/#eyJzZWxlY3RNb2RlbHMiOlsidGVhbXMiLCJ1c2VycyIsInBvc3RzIiwiY29tbWVudHMiLCJ0YWdzIiwicG9zdF90YWdzIl0sImlzUHJldmlld1JlbGF0aW9ucyI6ZmFsc2UsImlzU2hvd1JlbGF0aW9uQ29tbWVudCI6ZmFsc2UsImlzU2hvd0tleSI6dHJ1ZSwiaXNTaG93Q29tbWVudCI6ZmFsc2UsImlzSGlkZUNvbHVtbnMiOmZhbHNlfQ=="><img alt="예제 블로그 스키마의 테이블 6개와 외래 키 관계를 보여 주는 mermaid-erd-cli HTML 뷰어" src="https://raw.githubusercontent.com/koedame/mermaid-erd-cli/main/docs/images/hero.png" width="800"></a>
+
 [![CI](https://github.com/koedame/mermaid-erd-cli/actions/workflows/ci.yml/badge.svg)](https://github.com/koedame/mermaid-erd-cli/actions/workflows/ci.yml)
-[![npm version](https://badge.fury.io/js/mermaid-erd-cli.svg)](https://www.npmjs.com/package/mermaid-erd-cli)
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](./LICENSE)
+[![npm version](https://img.shields.io/npm/v/mermaid-erd-cli?color=336699)](https://www.npmjs.com/package/mermaid-erd-cli)
+![Node.js 22.12+](https://img.shields.io/badge/node-%E2%89%A522.12-336699)
+[![License: MIT](https://img.shields.io/badge/license-MIT-336699)](./LICENSE)
 
-실제 데이터베이스나 스키마 덤프로부터 [Mermaid](https://mermaid.js.org/) ER 다이어그램을 생성합니다. ORM이나 프레임워크가 필요 없습니다.
+[라이브 데모](https://koedame.github.io/mermaid-erd-cli/#eyJzZWxlY3RNb2RlbHMiOlsidGVhbXMiLCJ1c2VycyIsInBvc3RzIiwiY29tbWVudHMiLCJ0YWdzIiwicG9zdF90YWdzIl0sImlzUHJldmlld1JlbGF0aW9ucyI6ZmFsc2UsImlzU2hvd1JlbGF0aW9uQ29tbWVudCI6ZmFsc2UsImlzU2hvd0tleSI6dHJ1ZSwiaXNTaG93Q29tbWVudCI6ZmFsc2UsImlzSGlkZUNvbHVtbnMiOmZhbHNlfQ==) · [빠른 시작](#빠른-시작) · [사용법](#사용법) · [Docker](#docker) · [옵션](#옵션)
 
-[![screenshot](https://raw.githubusercontent.com/koedame/mermaid-erd-cli/main/docs/screenshot.png)](https://koedame.github.io/mermaid-erd-cli/#eyJzZWxlY3RNb2RlbHMiOlsidGVhbXMiLCJ1c2VycyIsInBvc3RzIiwiY29tbWVudHMiLCJ0YWdzIiwicG9zdF90YWdzIl0sImlzUHJldmlld1JlbGF0aW9ucyI6ZmFsc2UsImlzU2hvd1JlbGF0aW9uQ29tbWVudCI6ZmFsc2UsImlzU2hvd0tleSI6dHJ1ZSwiaXNTaG93Q29tbWVudCI6ZmFsc2UsImlzSGlkZUNvbHVtbnMiOmZhbHNlfQ==)
-
-**▶ [라이브 데모](https://koedame.github.io/mermaid-erd-cli/#eyJzZWxlY3RNb2RlbHMiOlsidGVhbXMiLCJ1c2VycyIsInBvc3RzIiwiY29tbWVudHMiLCJ0YWdzIiwicG9zdF90YWdzIl0sImlzUHJldmlld1JlbGF0aW9ucyI6ZmFsc2UsImlzU2hvd1JlbGF0aW9uQ29tbWVudCI6ZmFsc2UsImlzU2hvd0tleSI6dHJ1ZSwiaXNTaG93Q29tbWVudCI6ZmFsc2UsImlzSGlkZUNvbHVtbnMiOmZhbHNlfQ==)**
+</div>
 
 스키마(테이블, 컬럼, 기본 키, 외래 키, 주석)를 내성(introspect)하여 다음 중 하나를 출력할 수 있습니다.
 
@@ -18,6 +23,24 @@
 - 원시 **Mermaid** 텍스트 / **JSON**을 **표준 출력**으로. 다른 도구와 조합하기 좋습니다.
 
 관계는 외래 키에서 도출됩니다. 참조되는 테이블이 "1" 측, 외래 키를 가진 테이블이 "다" 측입니다. `NOT NULL` 외래 키는 필수 관계(`||--o{`)로, nullable 외래 키는 선택 관계(`|o--o{`)로 렌더링됩니다.
+
+## 주요 특징
+
+- **실제 데이터베이스 3종과 덤프 2종 지원.** PostgreSQL, MySQL, SQLite에 직접 연결할 수 있고, Rails `schema.rb`와 SQL DDL 파일은 데이터베이스 연결도 드라이버도 필요 없습니다.
+- **자체 완결형 HTML 파일 하나.** Mermaid, Vue, Tailwind가 인라인으로 번들되어 오프라인에서 동작하며, 테이블을 고른 뒤 SVG나 PNG로 내보낼 수 있습니다.
+- **어떤 도구와도 파이프로 연결.** `--format mermaid`와 `--format json`은 표준 출력으로 내보냅니다.
+- **컨테이너로 실행.** 드라이버 3종을 모두 포함한 distroless Docker 이미지를 GHCR과 Docker Hub에서 제공합니다.
+- **뷰어는 9개 언어 지원.** English, 日本語, 简体中文, 한국어, Español, Français, Deutsch, Português, Русский.
+
+## 빠른 시작
+
+Node.js 22.12 이상이 필요합니다. `npx`가 CLI를 받아 오므로 먼저 설치할 것은 없습니다.
+
+```bash
+npx mermaid-erd-cli --schema ./db/schema.rb
+```
+
+`erd/index.html`이 만들어집니다. 브라우저에서 열고 사이드바에서 테이블을 골라 SVG나 PNG로 내보내세요. 실제 데이터베이스를 읽으려면 `--db "postgres://user:pass@localhost:5432/mydb"`(또는 SQLite 파일 경로)를 넘기면 됩니다. 더 많은 예시는 [사용법](#사용법)에 있습니다.
 
 ## 사용법
 
@@ -148,10 +171,10 @@ npm run e2e        # 생성된 뷰어의 헤드리스 브라우저 검사
 
 HTML 뷰어와 내장 프런트엔드 라이브러리는 [rails-mermaid_erd](https://github.com/koedame/rails-mermaid_erd)(MIT)에서 파생되었습니다. 이 프로젝트는 동일한 뷰어와 `SCHEMA_DATA` 계약을 유지하면서, Rails/ActiveRecord 기반 추출을 직접적인 데이터베이스 내성과 스키마 덤프 파싱으로 대체했습니다. 내장된 Mermaid와 Vue 빌드, 그리고 Tailwind CSS로 생성한 스타일시트는 각자의 라이선스(MIT, ISC, BSD-3-Clause, Apache-2.0 등)로 재배포됩니다. 저작권 표시와 라이선스 본문은 [`assets/vendor/LICENSES.md`](./assets/vendor/LICENSES.md)와 생성되는 모든 HTML 파일의 맨 앞에 있습니다.
 
-## 라이선스
-
-MIT — [LICENSE](./LICENSE)를 참조하세요.
-
 ## 상표
 
 이 프로젝트는 Mermaid 프로젝트, Mermaid Chart Inc.와 제휴 관계가 없으며, 이들의 승인이나 후원을 받지 않았습니다. Mermaid Chart Inc.는 미국에서 MERMAID CHART와 MERMAID 상표를 등록했거나 출원했습니다. PostgreSQL, MySQL, SQLite, Docker 및 그 밖의 상표는 각 권리자의 자산입니다.
+
+## 라이선스
+
+MIT — [LICENSE](./LICENSE)를 참조하세요.

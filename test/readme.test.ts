@@ -39,7 +39,7 @@ describe("localized READMEs", () => {
     for (const f of files) {
       const text = read(f);
       expect(text, f).toContain("/actions/workflows/ci.yml/badge.svg");
-      expect(text, f).toContain("docs/screenshot.png");
+      expect(text, f).toContain("docs/images/hero.png");
       expect(text, f).toContain("# mermaid-erd-cli");
     }
   });
