@@ -1,16 +1,21 @@
 [English](./README.md) | [日本語](./README.ja.md) | [简体中文](./README.zh.md) | [한국어](./README.ko.md) | [Español](./README.es.md) | [Français](./README.fr.md) | [Deutsch](./README.de.md) | [Português](./README.pt.md) | [Русский](./README.ru.md)
 
+<div align="center">
+
 # mermaid-erd-cli
 
+**Genera un diagrama ER de [Mermaid](https://mermaid.js.org/) a partir de una base de datos en vivo o un volcado de esquema, sin necesidad de ORM ni framework.**
+
+<a href="https://koedame.github.io/mermaid-erd-cli/#eyJzZWxlY3RNb2RlbHMiOlsidGVhbXMiLCJ1c2VycyIsInBvc3RzIiwiY29tbWVudHMiLCJ0YWdzIiwicG9zdF90YWdzIl0sImlzUHJldmlld1JlbGF0aW9ucyI6ZmFsc2UsImlzU2hvd1JlbGF0aW9uQ29tbWVudCI6ZmFsc2UsImlzU2hvd0tleSI6dHJ1ZSwiaXNTaG93Q29tbWVudCI6ZmFsc2UsImlzSGlkZUNvbHVtbnMiOmZhbHNlfQ=="><img alt="El visor HTML de mermaid-erd-cli mostrando seis tablas de un esquema de blog de ejemplo y las relaciones de clave foránea entre ellas" src="https://raw.githubusercontent.com/koedame/mermaid-erd-cli/main/docs/images/hero.png" width="900"></a>
+
 [![CI](https://github.com/koedame/mermaid-erd-cli/actions/workflows/ci.yml/badge.svg)](https://github.com/koedame/mermaid-erd-cli/actions/workflows/ci.yml)
-[![npm version](https://badge.fury.io/js/mermaid-erd-cli.svg)](https://www.npmjs.com/package/mermaid-erd-cli)
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](./LICENSE)
+[![npm version](https://img.shields.io/npm/v/mermaid-erd-cli?color=336699)](https://www.npmjs.com/package/mermaid-erd-cli)
+![Node.js 22.12+](https://img.shields.io/badge/node-%E2%89%A522.12-336699)
+[![License: MIT](https://img.shields.io/badge/license-MIT-336699)](./LICENSE)
 
-Genera un diagrama ER de [Mermaid](https://mermaid.js.org/) a partir de una base de datos en vivo o un volcado de esquema, sin necesidad de ORM ni framework.
+[Demo en vivo](https://koedame.github.io/mermaid-erd-cli/#eyJzZWxlY3RNb2RlbHMiOlsidGVhbXMiLCJ1c2VycyIsInBvc3RzIiwiY29tbWVudHMiLCJ0YWdzIiwicG9zdF90YWdzIl0sImlzUHJldmlld1JlbGF0aW9ucyI6ZmFsc2UsImlzU2hvd1JlbGF0aW9uQ29tbWVudCI6ZmFsc2UsImlzU2hvd0tleSI6dHJ1ZSwiaXNTaG93Q29tbWVudCI6ZmFsc2UsImlzSGlkZUNvbHVtbnMiOmZhbHNlfQ==) · [Inicio rápido](#inicio-rápido) · [Uso](#uso) · [Docker](#docker) · [Opciones](#opciones)
 
-[![screenshot](https://raw.githubusercontent.com/koedame/mermaid-erd-cli/main/docs/screenshot.png)](https://koedame.github.io/mermaid-erd-cli/#eyJzZWxlY3RNb2RlbHMiOlsidGVhbXMiLCJ1c2VycyIsInBvc3RzIiwiY29tbWVudHMiLCJ0YWdzIiwicG9zdF90YWdzIl0sImlzUHJldmlld1JlbGF0aW9ucyI6ZmFsc2UsImlzU2hvd1JlbGF0aW9uQ29tbWVudCI6ZmFsc2UsImlzU2hvd0tleSI6dHJ1ZSwiaXNTaG93Q29tbWVudCI6ZmFsc2UsImlzSGlkZUNvbHVtbnMiOmZhbHNlfQ==)
-
-**▶ [Demo en vivo](https://koedame.github.io/mermaid-erd-cli/#eyJzZWxlY3RNb2RlbHMiOlsidGVhbXMiLCJ1c2VycyIsInBvc3RzIiwiY29tbWVudHMiLCJ0YWdzIiwicG9zdF90YWdzIl0sImlzUHJldmlld1JlbGF0aW9ucyI6ZmFsc2UsImlzU2hvd1JlbGF0aW9uQ29tbWVudCI6ZmFsc2UsImlzU2hvd0tleSI6dHJ1ZSwiaXNTaG93Q29tbWVudCI6ZmFsc2UsImlzSGlkZUNvbHVtbnMiOmZhbHNlfQ==)**
+</div>
 
 Inspecciona tu esquema (tablas, columnas, claves primarias, claves foráneas, comentarios) y puede generar:
 
@@ -18,6 +23,24 @@ Inspecciona tu esquema (tablas, columnas, claves primarias, claves foráneas, co
 - texto **Mermaid** / **JSON** sin procesar a la **salida estándar**, para componerlo con otras herramientas.
 
 Las relaciones se derivan de las claves foráneas: la tabla referenciada es el lado «uno» y la tabla que contiene la clave foránea es el lado «muchos». Una clave foránea `NOT NULL` se representa como una relación obligatoria (`||--o{`); una que admite nulos, como opcional (`|o--o{`).
+
+## Características
+
+- **Tres bases de datos en vivo y dos formatos de volcado.** PostgreSQL, MySQL y SQLite directamente; `schema.rb` de Rails y archivos SQL DDL sin conexión a una base de datos ni controlador.
+- **Un único archivo HTML autocontenido.** Mermaid, Vue y Tailwind van incluidos en línea, así que el visor funciona sin conexión: elige tablas y exporta a SVG o PNG.
+- **Se conecta con cualquier herramienta mediante tuberías.** `--format mermaid` y `--format json` escriben en la salida estándar.
+- **Se ejecuta desde un contenedor.** Una imagen Docker distroless incluye los tres controladores (GHCR y Docker Hub).
+- **Visor en 9 idiomas.** English, 日本語, 简体中文, 한국어, Español, Français, Deutsch, Português y Русский.
+
+## Inicio rápido
+
+Requiere Node.js 22.12 o posterior. `npx` descarga la CLI, así que no hay que instalar nada antes:
+
+```bash
+npx mermaid-erd-cli --schema ./db/schema.rb
+```
+
+Esto escribe `erd/index.html`: ábrelo en un navegador, elige tablas en la barra lateral y exporta a SVG o PNG. Para leer una base de datos en vivo, pasa en su lugar `--db "postgres://user:pass@localhost:5432/mydb"` (o la ruta de un archivo SQLite). Hay más ejemplos en [Uso](#uso).
 
 ## Uso
 
@@ -148,10 +171,10 @@ npm run e2e        # comprobación del visor generado en un navegador headless
 
 El visor HTML y las bibliotecas de frontend incluidas derivan de [rails-mermaid_erd](https://github.com/koedame/rails-mermaid_erd) (MIT). Este proyecto conserva el mismo visor y el contrato `SCHEMA_DATA`, sustituyendo la extracción de Rails/ActiveRecord por la inspección directa de la base de datos y el análisis de volcados de esquema. Las versiones incluidas de Mermaid y Vue y la hoja de estilos generada con Tailwind CSS se redistribuyen bajo sus propias licencias (MIT, ISC, BSD-3-Clause, Apache-2.0 y algunas más). Sus avisos de copyright y los textos de licencia están en [`assets/vendor/LICENSES.md`](./assets/vendor/LICENSES.md) y al principio de cada archivo HTML generado.
 
-## Licencia
-
-MIT — consulta [LICENSE](./LICENSE).
-
 ## Marcas registradas
 
 Este proyecto no está afiliado al proyecto Mermaid ni a Mermaid Chart Inc., y no cuenta con su respaldo ni patrocinio. Mermaid Chart Inc. ha registrado o solicitado las marcas MERMAID CHART y MERMAID en Estados Unidos. PostgreSQL, MySQL, SQLite, Docker y las demás marcas son propiedad de sus respectivos titulares.
+
+## Licencia
+
+MIT — consulta [LICENSE](./LICENSE).

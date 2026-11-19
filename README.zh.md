@@ -1,16 +1,21 @@
 [English](./README.md) | [日本語](./README.ja.md) | [简体中文](./README.zh.md) | [한국어](./README.ko.md) | [Español](./README.es.md) | [Français](./README.fr.md) | [Deutsch](./README.de.md) | [Português](./README.pt.md) | [Русский](./README.ru.md)
 
+<div align="center">
+
 # mermaid-erd-cli
 
+**从实际数据库或模式转储生成 [Mermaid](https://mermaid.js.org/) ER 图——无需 ORM 或框架。**
+
+<a href="https://koedame.github.io/mermaid-erd-cli/#eyJzZWxlY3RNb2RlbHMiOlsidGVhbXMiLCJ1c2VycyIsInBvc3RzIiwiY29tbWVudHMiLCJ0YWdzIiwicG9zdF90YWdzIl0sImlzUHJldmlld1JlbGF0aW9ucyI6ZmFsc2UsImlzU2hvd1JlbGF0aW9uQ29tbWVudCI6ZmFsc2UsImlzU2hvd0tleSI6dHJ1ZSwiaXNTaG93Q29tbWVudCI6ZmFsc2UsImlzSGlkZUNvbHVtbnMiOmZhbHNlfQ=="><img alt="mermaid-erd-cli 的 HTML 查看器,显示示例博客模式的 6 张表及其外键关系" src="https://raw.githubusercontent.com/koedame/mermaid-erd-cli/main/docs/images/hero.png" width="900"></a>
+
 [![CI](https://github.com/koedame/mermaid-erd-cli/actions/workflows/ci.yml/badge.svg)](https://github.com/koedame/mermaid-erd-cli/actions/workflows/ci.yml)
-[![npm version](https://badge.fury.io/js/mermaid-erd-cli.svg)](https://www.npmjs.com/package/mermaid-erd-cli)
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](./LICENSE)
+[![npm version](https://img.shields.io/npm/v/mermaid-erd-cli?color=336699)](https://www.npmjs.com/package/mermaid-erd-cli)
+![Node.js 22.12+](https://img.shields.io/badge/node-%E2%89%A522.12-336699)
+[![License: MIT](https://img.shields.io/badge/license-MIT-336699)](./LICENSE)
 
-从实际数据库或模式转储生成 [Mermaid](https://mermaid.js.org/) ER 图——无需 ORM 或框架。
+[在线演示](https://koedame.github.io/mermaid-erd-cli/#eyJzZWxlY3RNb2RlbHMiOlsidGVhbXMiLCJ1c2VycyIsInBvc3RzIiwiY29tbWVudHMiLCJ0YWdzIiwicG9zdF90YWdzIl0sImlzUHJldmlld1JlbGF0aW9ucyI6ZmFsc2UsImlzU2hvd1JlbGF0aW9uQ29tbWVudCI6ZmFsc2UsImlzU2hvd0tleSI6dHJ1ZSwiaXNTaG93Q29tbWVudCI6ZmFsc2UsImlzSGlkZUNvbHVtbnMiOmZhbHNlfQ==) · [快速开始](#快速开始) · [用法](#用法) · [Docker](#docker) · [选项](#选项)
 
-[![screenshot](https://raw.githubusercontent.com/koedame/mermaid-erd-cli/main/docs/screenshot.png)](https://koedame.github.io/mermaid-erd-cli/#eyJzZWxlY3RNb2RlbHMiOlsidGVhbXMiLCJ1c2VycyIsInBvc3RzIiwiY29tbWVudHMiLCJ0YWdzIiwicG9zdF90YWdzIl0sImlzUHJldmlld1JlbGF0aW9ucyI6ZmFsc2UsImlzU2hvd1JlbGF0aW9uQ29tbWVudCI6ZmFsc2UsImlzU2hvd0tleSI6dHJ1ZSwiaXNTaG93Q29tbWVudCI6ZmFsc2UsImlzSGlkZUNvbHVtbnMiOmZhbHNlfQ==)
-
-**▶ [在线演示](https://koedame.github.io/mermaid-erd-cli/#eyJzZWxlY3RNb2RlbHMiOlsidGVhbXMiLCJ1c2VycyIsInBvc3RzIiwiY29tbWVudHMiLCJ0YWdzIiwicG9zdF90YWdzIl0sImlzUHJldmlld1JlbGF0aW9ucyI6ZmFsc2UsImlzU2hvd1JlbGF0aW9uQ29tbWVudCI6ZmFsc2UsImlzU2hvd0tleSI6dHJ1ZSwiaXNTaG93Q29tbWVudCI6ZmFsc2UsImlzSGlkZUNvbHVtbnMiOmZhbHNlfQ==)**
+</div>
 
 它会内省你的模式(表、列、主键、外键、注释),并可输出以下任意一种:
 
@@ -18,6 +23,24 @@
 - 将原始 **Mermaid** 文本 / **JSON** 输出到 **标准输出**,便于与其他工具组合。
 
 关系由外键推导:被引用的表为「一」方,持有外键的表为「多」方。`NOT NULL` 的外键渲染为强制关系(`||--o{`),可空的外键渲染为可选关系(`|o--o{`)。
+
+## 亮点
+
+- **支持 3 种在线数据库和 2 种转储格式。** 可直接连接 PostgreSQL、MySQL 和 SQLite;Rails `schema.rb` 与 SQL DDL 文件无需数据库连接,也无需驱动。
+- **单个自包含的 HTML 文件。** Mermaid、Vue 和 Tailwind 以内联方式打包,可离线使用,选择表后即可导出 SVG 或 PNG。
+- **可接入任何管道。** `--format mermaid` 和 `--format json` 输出到标准输出。
+- **可在容器中运行。** 提供内置全部三种驱动的 distroless Docker 镜像(GHCR 和 Docker Hub)。
+- **查看器支持 9 种语言。** English、日本語、简体中文、한국어、Español、Français、Deutsch、Português、Русский。
+
+## 快速开始
+
+需要 Node.js 22.12 或更高版本。`npx` 会获取 CLI,无需先安装任何东西:
+
+```bash
+npx mermaid-erd-cli --schema ./db/schema.rb
+```
+
+命令会写出 `erd/index.html`。在浏览器中打开,在侧边栏选择表,然后导出 SVG 或 PNG。若要读取在线数据库,请改为传入 `--db "postgres://user:pass@localhost:5432/mydb"`(或 SQLite 文件路径)。更多示例见[用法](#用法)。
 
 ## 用法
 
@@ -145,10 +168,10 @@ npm run e2e        # 对生成的查看器进行无头浏览器检查
 
 HTML 查看器及内置的前端库派生自 [rails-mermaid_erd](https://github.com/koedame/rails-mermaid_erd)(MIT)。本项目沿用了相同的查看器与 `SCHEMA_DATA` 约定,将 Rails/ActiveRecord 的抽取替换为直接的数据库内省与模式转储解析。内置的 Mermaid、Vue 构建以及用 Tailwind CSS 生成的样式表按各自的许可证再分发(MIT、ISC、BSD-3-Clause、Apache-2.0 等)。版权声明和许可证全文见 [`assets/vendor/LICENSES.md`](./assets/vendor/LICENSES.md),也在每个生成的 HTML 文件的开头。
 
-## 许可证
-
-MIT——参见 [LICENSE](./LICENSE)。
-
 ## 商标
 
 本项目与 Mermaid 项目、Mermaid Chart Inc. 均无关联，也未获得它们的认可或赞助。Mermaid Chart Inc. 已在美国注册或申请注册 MERMAID CHART 和 MERMAID 商标。PostgreSQL、MySQL、SQLite、Docker 及其他商标归各自权利人所有。
+
+## 许可证
+
+MIT——参见 [LICENSE](./LICENSE)。
