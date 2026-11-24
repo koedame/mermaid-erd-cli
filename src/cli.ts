@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 import { constants } from "node:fs";
-import { mkdir, open } from "node:fs/promises";
+import { lstat, mkdir, open } from "node:fs/promises";
 import { createServer } from "node:http";
 import { isIP } from "node:net";
-import { dirname, resolve } from "node:path";
+import { dirname, isAbsolute, join, relative, resolve, sep } from "node:path";
 import { parseArgs } from "node:util";
 import { buildSchemaData } from "./build.js";
 import { DEFAULT_IGNORE_TABLES, loadIgnoreTables } from "./config.js";
@@ -154,16 +154,33 @@ async function run(options: Options): Promise<void> {
   }
 
   const outPath = resolve(options.out ?? "erd/index.html");
-  await mkdir(dirname(outPath), { recursive: true });
   await writeOutput(outPath, content);
   console.error(`Wrote ${summary} -> ${outPath}`);
 }
 
 // The output path (by default `erd/index.html` under the current directory)
-// may sit in a checkout someone else wrote, so a symbolic link there is not
-// followed: the write would replace whatever file the link points to. Windows
-// has no O_NOFOLLOW; Git there checks links out as plain files by default.
+// may sit in a checkout someone else wrote, so symbolic links there are not
+// followed: the write would replace whatever file the link points to. Below the
+// current directory no directory on the way may be a link either; a path
+// outside it is one the caller chose. Windows has no O_NOFOLLOW; Git there
+// checks links out as plain files by default.
 async function writeOutput(outPath: string, content: string): Promise<void> {
+  const below = relative(process.cwd(), dirname(outPath));
+  if (below !== "" && !below.startsWith("..") && !isAbsolute(below)) {
+    let dir = process.cwd();
+    for (const part of below.split(sep)) {
+      dir = join(dir, part);
+      const stat = await lstat(dir).catch((err: NodeJS.ErrnoException) => {
+        if (err.code === "ENOENT") return null;
+        throw err;
+      });
+      if (stat === null) break;
+      if (stat.isSymbolicLink()) {
+        throw new Error(`${dir} is a symbolic link; remove it or choose another --out`);
+      }
+    }
+  }
+  await mkdir(dirname(outPath), { recursive: true });
   const flags =
     constants.O_WRONLY | constants.O_CREAT | constants.O_TRUNC | (constants.O_NOFOLLOW ?? 0);
   let file: Awaited<ReturnType<typeof open>>;

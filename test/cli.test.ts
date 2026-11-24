@@ -5,7 +5,7 @@ import { get } from "node:http";
 import { connect, createServer } from "node:net";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 import { promisify } from "node:util";
 import Database from "better-sqlite3";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
@@ -13,6 +13,7 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 const run = promisify(execFile);
 const here = fileURLToPath(new URL(".", import.meta.url));
 const cli = join(here, "..", "src", "cli.ts");
+const tsxLoader = join(here, "..", "node_modules", "tsx", "dist", "loader.mjs");
 
 let dir: string;
 let dbPath: string;
@@ -201,6 +202,37 @@ describe("CLI output", () => {
       stderr: expect.stringContaining("is a symbolic link"),
     });
     expect(await readFile(target, "utf8")).toBe("keep me\n");
+  });
+
+  it("leaves a directory behind a symbolic link under the current directory untouched", async () => {
+    const work = mkdtempSync(join(tmpdir(), "merd-cwd-"));
+    const elsewhere = mkdtempSync(join(tmpdir(), "merd-elsewhere-"));
+    try {
+      writeFileSync(join(elsewhere, "index.html"), "keep me\n");
+      symlinkSync(elsewhere, join(work, "erd"));
+      await expect(
+        // `--import tsx` resolves from the working directory, so name the loader by path.
+        run("node", ["--import", pathToFileURL(tsxLoader).href, cli, "--db", dbPath], {
+          cwd: work,
+        }),
+      ).rejects.toMatchObject({ stderr: expect.stringContaining("is a symbolic link") });
+      expect(await readFile(join(elsewhere, "index.html"), "utf8")).toBe("keep me\n");
+    } finally {
+      rmSync(work, { recursive: true, force: true });
+      rmSync(elsewhere, { recursive: true, force: true });
+    }
+  });
+
+  it("follows a symbolic link in a directory outside the current directory", async () => {
+    const real = mkdtempSync(join(tmpdir(), "merd-real-"));
+    const link = join(dir, "outside-link");
+    try {
+      symlinkSync(real, link);
+      await mermaidErd(["--db", dbPath, "--out", join(link, "erd.html")]);
+      expect(await readFile(join(real, "erd.html"), "utf8")).toContain("window.SCHEMA_DATA=");
+    } finally {
+      rmSync(real, { recursive: true, force: true });
+    }
   });
 
   it("replaces an existing regular file at --out", async () => {
