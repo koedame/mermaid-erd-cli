@@ -1,5 +1,6 @@
 #!/usr/bin/env node
-import { mkdir, writeFile } from "node:fs/promises";
+import { constants } from "node:fs";
+import { mkdir, open } from "node:fs/promises";
 import { createServer } from "node:http";
 import { isIP } from "node:net";
 import { dirname, resolve } from "node:path";
@@ -154,8 +155,31 @@ async function run(options: Options): Promise<void> {
 
   const outPath = resolve(options.out ?? "erd/index.html");
   await mkdir(dirname(outPath), { recursive: true });
-  await writeFile(outPath, content);
+  await writeOutput(outPath, content);
   console.error(`Wrote ${summary} -> ${outPath}`);
+}
+
+// The output path (by default `erd/index.html` under the current directory)
+// may sit in a checkout someone else wrote, so a symbolic link there is not
+// followed: the write would replace whatever file the link points to. Windows
+// has no O_NOFOLLOW; Git there checks links out as plain files by default.
+async function writeOutput(outPath: string, content: string): Promise<void> {
+  const flags =
+    constants.O_WRONLY | constants.O_CREAT | constants.O_TRUNC | (constants.O_NOFOLLOW ?? 0);
+  let file: Awaited<ReturnType<typeof open>>;
+  try {
+    file = await open(outPath, flags, 0o666);
+  } catch (err) {
+    if ((err as NodeJS.ErrnoException).code === "ELOOP") {
+      throw new Error(`${outPath} is a symbolic link; remove it or choose another --out`);
+    }
+    throw err;
+  }
+  try {
+    await file.writeFile(content);
+  } finally {
+    await file.close();
+  }
 }
 
 async function resolveIgnoreTables(options: Options): Promise<string[]> {

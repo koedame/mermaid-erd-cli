@@ -145,7 +145,7 @@ docker run --rm -v "$PWD:/work" mermaid-erd-cli --schema schema.rb
 | `--schema <path>` | Schema dump (`.rb` Rails schema, `.sql` DDL) | — |
 | `--pg-schema <name>` | PostgreSQL schema to introspect | `public` |
 | `--format <html\|mermaid\|json>` | Output format (`mmd` is an alias for `mermaid`) | `html` |
-| `--out <path>` | Output path; `-` means stdout | `erd/index.html` (html); stdout (mermaid/json) |
+| `--out <path>` | Output path; `-` means stdout. A symbolic link at the path is not followed: the run fails instead | `erd/index.html` (html); stdout (mermaid/json) |
 | `--serve` | Render HTML and serve it over HTTP | off |
 | `--port <number>` | Port to listen on with `--serve` | random |
 | `--host <address>` | Address to bind with `--serve`. `0.0.0.0` exposes your full schema on every network interface — use only on trusted networks | `127.0.0.1` |
