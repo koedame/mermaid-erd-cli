@@ -9,6 +9,10 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ### Changed
 
 - Raise the minimum supported Node.js to 22.12 and drop end-of-life Node 20.
+- The output file is no longer written through a symbolic link. When the
+  `--out` path (or the default `erd/index.html`), or a directory between the
+  current directory and it, is a symbolic link, the run now fails and what the
+  link points to is left as it is.
 - A run of `%` in a table name, column name or comment is now written as a
   single `%` in the viewer and in the Mermaid and JSON output.
 - Reading a SQL dump with many unclosed `CREATE TABLE` bodies now takes time in
