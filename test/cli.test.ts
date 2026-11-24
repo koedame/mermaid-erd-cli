@@ -217,6 +217,24 @@ describe("CLI output", () => {
         }),
       ).rejects.toMatchObject({ stderr: expect.stringContaining("is a symbolic link") });
       expect(await readFile(join(elsewhere, "index.html"), "utf8")).toBe("keep me\n");
+
+      symlinkSync(elsewhere, join(work, "..x"));
+      await expect(
+        run(
+          "node",
+          [
+            "--import",
+            pathToFileURL(tsxLoader).href,
+            cli,
+            "--db",
+            dbPath,
+            "--out",
+            "..x/index.html",
+          ],
+          { cwd: work },
+        ),
+      ).rejects.toMatchObject({ stderr: expect.stringContaining("is a symbolic link") });
+      expect(await readFile(join(elsewhere, "index.html"), "utf8")).toBe("keep me\n");
     } finally {
       rmSync(work, { recursive: true, force: true });
       rmSync(elsewhere, { recursive: true, force: true });

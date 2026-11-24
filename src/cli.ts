@@ -166,7 +166,8 @@ async function run(options: Options): Promise<void> {
 // checks links out as plain files by default.
 async function writeOutput(outPath: string, content: string): Promise<void> {
   const below = relative(process.cwd(), dirname(outPath));
-  if (below !== "" && !below.startsWith("..") && !isAbsolute(below)) {
+  const outside = below === ".." || below.startsWith(`..${sep}`) || isAbsolute(below);
+  if (below !== "" && !outside) {
     let dir = process.cwd();
     for (const part of below.split(sep)) {
       dir = join(dir, part);
